@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoxieOn — Live Concerts, Seat Booking, Snacks &amp; Patronage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="ambient-bg"></div>
+
+  <!-- Sticky Navigation + Always-Accessible Menu -->
+  <header class="navbar">
+    <div class="nav-inner">
+      <a class="brand" id="brandHomeBtn" href="#view-home">
+        <span class="eq-bars" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+        <span>MoxieOn</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary Navigation">
+        <button class="nav-link active" data-view="home">Home</button>
+        <button class="nav-link" data-view="events">Events</button>
+        <button class="nav-link" data-view="mixes">Mixes &amp; Lineup</button>
+        <button class="nav-link" data-view="gallery">Gallery</button>
+        <button class="nav-link" data-view="sponsors">Sponsors</button>
+        <button class="nav-link" data-view="account">Account</button>
+      </nav>
+      <div class="nav-actions">
+        <button class="menu-toggle-btn" id="menuToggleBtn" aria-expanded="false">☰ Menu</button>
+        <button class="btn btn-ghost" id="navTicketsBtn">Tickets <span class="badge-count" id="navTicketCount">0</span></button>
+        <button class="btn btn-rose" id="navAuthBtn">Sign In</button>
+      </div>
+    </div>
+    <!-- Mobile / Narrow Panel Menu List -->
+    <div class="mobile-menu-drawer" id="mobileMenuDrawer">
+      <button class="nav-link active" data-view="home">Home</button>
+      <button class="nav-link" data-view="events">Events</button>
+      <button class="nav-link" data-view="mixes">Mixes &amp; Lineup</button>
+      <button class="nav-link" data-view="gallery">Gallery</button>
+      <button class="nav-link" data-view="sponsors">Sponsors</button>
+      <button class="nav-link" data-view="account">Account</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- HOME VIEW -->
+    <section id="view-home" class="view-section active">
+      <div class="hero">
+        <img src="images/hero.jpg" alt="Live Concert Stage" class="hero-bg" />
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <div class="hero-pill">MoxieOn Live • Concerts Near You • Seat Map &amp; Snack Pre-Order</div>
+          <h1>Live Music, <span>Tuned to Your Vibe</span></h1>
+          <p>Book hip-hop cyphers, grand orchestral nights, independent singers, and melodic DJ sets near you — pick your seats, pre-order venue snacks, and walk in with an instant QR pass.</p>
+          <div class="hero-search-bar">
+            <input id="heroQuickSearch" type="text" placeholder="Search concerts, artists, or cities (e.g., Chennai)..." />
+            <button class="btn btn-rose" id="heroQuickGoBtn">Find Shows</button>
+          </div>
+          <div class="hero-cta-row">
+            <button class="btn btn-primary" id="heroExploreBtn">Explore Upcoming Events</button>
+            <button class="btn btn-ghost" id="heroVibeBtn">Personalize My Vibe</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Strip -->
+      <div class="stats-strip reveal">
+        <div class="stat-item">
+          <div class="stat-icon">♫</div>
+          <div><div class="stat-val">500+</div><div class="stat-lbl">Live Nights Hosted</div></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">★</div>
+          <div><div class="stat-val">4.9 / 5</div><div class="stat-lbl">Audience Vibe Rating</div></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">🍿</div>
+          <div><div class="stat-val">Pre-Order</div><div class="stat-lbl">Zero-Wait Venue Snacks</div></div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">⚡</div>
+          <div><div class="stat-val">Instant QR</div><div class="stat-lbl">Digital Ticket &amp; Seat Map</div></div>
+        </div>
+      </div>
+
+      <!-- Browse by Vibe -->
+      <div class="section-head reveal">
+        <div>
+          <div class="section-eyebrow">Browse by Genre</div>
+          <h2 class="section-title">Choose Your Sound</h2>
+        </div>
+        <button class="btn btn-soft" data-goto="events">All Filters →</button>
+      </div>
+      <div class="vibe-grid reveal" id="vibeShowcaseGrid">
+        <div class="vibe-card" data-vibe="Hip-Hop">
+          <img src="images/hiphop.jpg" alt="Hip-Hop" />
+          <div class="vibe-card-overlay"></div>
+          <div class="vibe-card-content"><h3>Hip-Hop &amp; Rap</h3><p>Cyphers, live 808s &amp; arena showcases</p></div>
+        </div>
+        <div class="vibe-card" data-vibe="Orchestral">
+          <img src="images/orchestral.jpg" alt="Orchestral" />
+          <div class="vibe-card-overlay"></div>
+          <div class="vibe-card-content"><h3>Orchestral Nights</h3><p>Symphony halls &amp; ambient strings</p></div>
+        </div>
+        <div class="vibe-card" data-vibe="Indie Singer">
+          <img src="images/indie.jpg" alt="Indie Singer" />
+          <div class="vibe-card-overlay"></div>
+          <div class="vibe-card-content"><h3>Indie Singers</h3><p>Intimate acoustic &amp; neo-soul sessions</p></div>
+        </div>
+        <div class="vibe-card" data-vibe="DJ &amp; Electronic">
+          <img src="images/dj.jpg" alt="DJ &amp; Electronic" />
+          <div class="vibe-card-overlay"></div>
+          <div class="vibe-card-content"><h3>DJ &amp; Electronic</h3><p>Sunset festivals &amp; melodic techno</p></div>
+        </div>
+      </div>
+
+      <!-- Personalized Upcoming Event Posters -->
+      <div class="section-head reveal">
+        <div>
+          <div class="section-eyebrow" id="recEyebrow">Curated Upcoming Posters</div>
+          <h2 class="section-title" id="recHeading">Upcoming Concerts Near You</h2>
+        </div>
+        <button class="btn btn-soft" id="editInterestsHomeBtn">Customize Interests</button>
+      </div>
+      <div class="cards-grid reveal" id="homeUpcomingGrid" style="margin-bottom: 3rem;"></div>
+
+      <!-- Best Events Happened Ever (Hall of Fame) -->
+      <div class="section-head reveal">
+        <div>
+          <div class="section-eyebrow">Hall of Fame</div>
+          <h2 class="section-title">Best Events Happened Ever</h2>
+        </div>
+        <button class="btn btn-soft" data-goto="gallery">View Full Gallery →</button>
+      </div>
+      <div class="cards-grid reveal" id="bestEventsGrid" style="margin-bottom: 3rem;"></div>
+
+      <!-- How MoxieOn Works + Pre-Order Snacks -->
+      <div class="section-head reveal">
+        <div>
+          <div class="section-eyebrow">Seamless Experience</div>
+          <h2 class="section-title">From Seat Map to Express Snacks</h2>
+        </div>
+      </div>
+      <div class="steps-grid reveal">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h3 style="font-size:1.06rem; font-weight:800; margin-bottom:0.35rem;">Pick Your Seats Live</h3>
+          <p style="font-size:0.88rem; color:var(--ink-muted);">Choose VIP Pit, Balcony, or General zones on an interactive venue seat map with a 10-minute lock timer.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h3 style="font-size:1.06rem; font-weight:800; margin-bottom:0.35rem;">Pre-Order Snacks Beforehand</h3>
+          <p style="font-size:0.88rem; color:var(--ink-muted);">Skip intermission queues by adding loaded nachos, cold brews, or popcorn directly to your ticket pass.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h3 style="font-size:1.06rem; font-weight:800; margin-bottom:0.35rem;">Walk In With Instant QR</h3>
+          <p style="font-size:0.88rem; color:var(--ink-muted);">One digital QR pass covers both your gate entry and express snack counter pickup.</p>
+        </div>
+      </div>
+
+      <!-- Trusted by Concertgoers -->
+      <div class="section-head reveal">
+        <div>
+          <div class="section-eyebrow">Community Love</div>
+          <h2 class="section-title">Trusted by Concertgoers</h2>
+        </div>
+      </div>
+      <div class="steps-grid reveal">
+        <div class="mini-card">
+          <div style="color:#F59E0B; font-weight:800; margin-bottom:0.35rem;">★★★★★</div>
+          <p style="font-size:0.9rem; color:var(--ink-muted); margin-bottom:0.65rem;">"Pre-ordering iced lavender cold brew with my VIP pass saved us 30 minutes at the Sir Mutha concert hall."</p>
+          <strong>Ritika Sharma</strong> <small style="color:var(--ink-muted);">• Chennai</small>
+        </div>
+        <div class="mini-card">
+          <div style="color:#F59E0B; font-weight:800; margin-bottom:0.35rem;">★★★★★</div>
+          <p style="font-size:0.9rem; color:var(--ink-muted); margin-bottom:0.65rem;">"After picking Indie Singer &amp; Orchestral in my profile, MoxieOn surfaced three shows I never would have found!"</p>
+          <strong>Amit Verma</strong> <small style="color:var(--ink-muted);">• Bengaluru</small>
+        </div>
+        <div class="mini-card">
+          <div style="color:#F59E0B; font-weight:800; margin-bottom:0.35rem;">★★★★★</div>
+          <p style="font-size:0.9rem; color:var(--ink-muted); margin-bottom:0.65rem;">"Being able to sponsor an emerging indie artist right from the menu feels genuinely meaningful."</p>
+          <strong>Karan Mehta</strong> <small style="color:var(--ink-muted);">• Mumbai</small>
+        </div>
+      </div>
+
+      <!-- Sponsor CTA Banner -->
+      <div class="cta-banner reveal">
+        <div>
+          <div class="hero-pill" style="margin-bottom:0.65rem;">MoxieOn Patronage</div>
+          <h2 style="font-size:1.65rem; font-weight:800; margin-bottom:0.35rem;">Back an Independent Artist or Upcoming Stage</h2>
+          <p style="color:#DDD6FE; font-size:0.94rem; max-width:540px;">Support local musicians, orchestral collectives, or headline concerts and get featured on our live Patron Wall.</p>
+        </div>
+        <button class="btn btn-rose" data-goto="sponsors">Become a Sponsor →</button>
+      </div>
+    </section>
+
+    <!-- EVENTS & ADVANCED FILTER VIEW -->
+    <section id="view-events" class="view-section">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">Discover &amp; Filter</div>
+          <h2 class="section-title">Find Your Next Live Night</h2>
+        </div>
+        <button class="btn btn-soft" id="toggleFiltersBtn">Hide Advanced Search</button>
+      </div>
+
+      <div class="filter-card" id="advancedFilterPanel">
+        <div class="filter-grid">
+          <div class="field-group">
+            <label for="fSearch">Search</label>
+            <input id="fSearch" class="input" type="text" placeholder="Search events, artists, venues..." />
+          </div>
+          <div class="field-group">
+            <label for="fDate">When</label>
+            <input id="fDate" class="input" type="date" />
+          </div>
+          <div class="field-group">
+            <label for="fCategory">Category</label>
+            <select id="fCategory" class="select">
+              <option value="All">Any category</option>
+              <option value="Hip-Hop">Hip-Hop</option>
+              <option value="Orchestral">Orchestral</option>
+              <option value="Indie Singer">Indie Singer</option>
+              <option value="DJ &amp; Electronic">DJ &amp; Electronic</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="fRating">Rating</label>
+            <select id="fRating" class="select">
+              <option value="0">Any rating</option>
+              <option value="4.8">4.8+ Stars</option>
+              <option value="4.5">4.5+ Stars</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="fCity">Venue / City</label>
+            <select id="fCity" class="select">
+              <option value="All">Any city</option>
+              <option value="Chennai">Chennai (Near You)</option>
+              <option value="Bengaluru">Bengaluru</option>
+              <option value="Mumbai">Mumbai</option>
+              <option value="Goa">Goa</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="fArtist">Artist / Performer</label>
+            <input id="fArtist" class="input" type="text" placeholder="Artist or performer name" />
+          </div>
+          <div class="field-group">
+            <label for="fPrice">Max Price: <strong id="fPriceVal">₹8,000</strong></label>
+            <input id="fPrice" type="range" min="500" max="8000" step="250" value="8000" style="width:100%; accent-color: var(--primary); margin-top: 0.55rem;" />
+          </div>
+        </div>
+        <div class="filter-checks">
+          <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <label class="checkbox-label"><input type="checkbox" id="fNoFee" /> No service fee</label>
+            <label class="checkbox-label"><input type="checkbox" id="fHideAttended" /> Hide events I've attended</label>
+          </div>
+          <div style="display:flex; gap:0.65rem;">
+            <button class="btn btn-soft" id="resetFiltersBtn">Reset</button>
+            <button class="btn btn-primary" id="applyFiltersBtn">Find Events</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cat-pills-row" id="quickCatRow">
+        <div class="cat-pill-card active" data-cat="All">✦ All Concerts</div>
+        <div class="cat-pill-card" data-cat="Hip-Hop">🎤 Hip-Hop</div>
+        <div class="cat-pill-card" data-cat="Orchestral">🎻 Orchestral</div>
+        <div class="cat-pill-card" data-cat="Indie Singer">🎸 Indie Singers</div>
+        <div class="cat-pill-card" data-cat="DJ &amp; Electronic">🎧 DJ &amp; Electronic</div>
+      </div>
+
+      <div class="sort-bar">
+        <div class="sort-tabs" id="sortTabs">
+          <button class="sort-tab active" data-sort="Recommended">Recommended</button>
+          <button class="sort-tab" data-sort="Popular">Popular</button>
+          <button class="sort-tab" data-sort="New">New</button>
+          <button class="sort-tab" data-sort="Deals">Deals</button>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn btn-soft" id="gridModeBtn">Grid</button>
+          <button class="btn btn-soft" id="listModeBtn">List</button>
+        </div>
+      </div>
+
+      <div class="cards-grid" id="eventsCatalogGrid"></div>
+    </section>
+
+    <!-- EVENT DETAIL VIEW -->
+    <section id="view-detail" class="view-section">
+      <button class="btn btn-soft" id="backToEventsBtn" style="margin-bottom: 1rem;">← Back to Events</button>
+      <div id="eventDetailContainer"></div>
+    </section>
+
+    <!-- MIXES & LINEUP VIEW -->
+    <section id="view-mixes" class="view-section">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">Soundcheck</div>
+          <h2 class="section-title">Featured Artists &amp; Live Mixes</h2>
+        </div>
+      </div>
+      <div class="cards-grid" id="mixesGrid"></div>
+    </section>
+
+    <!-- GALLERY VIEW -->
+    <section id="view-gallery" class="view-section">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">Moments We Created</div>
+          <h2 class="section-title">Iconic Concert Gallery</h2>
+        </div>
+      </div>
+      <div class="cards-grid" id="galleryGrid"></div>
+    </section>
+
+    <!-- SPONSORS VIEW -->
+    <section id="view-sponsors" class="view-section">
+      <div class="section-head">
+        <div>
+          <div class="section-eyebrow">Community Patronage</div>
+          <h2 class="section-title">Sponsor an Event or Artist</h2>
+        </div>
+      </div>
+      <div class="about-split" style="align-items: start;">
+        <div>
+          <h3 style="font-size:1.25rem; font-weight:800; margin-bottom:0.5rem;">Back the Next Unforgettable Stage</h3>
+          <p style="color:var(--ink-muted); font-size:0.93rem; margin-bottom:1.25rem;">Individuals and brands can directly sponsor an upcoming concert or support an independent singer, orchestra member, or DJ.</p>
+          <form id="sponsorForm" style="display:grid; gap:0.9rem;">
+            <div class="field-group">
+              <label for="spName">Your Name / Brand</label>
+              <input id="spName" class="input" required placeholder="e.g., Studio Sol or Ananya M." />
+            </div>
+            <div class="field-group">
+              <label for="spType">Sponsor Target</label>
+              <select id="spType" class="select">
+                <option value="Event">Upcoming Event</option>
+                <option value="Artist">Independent Artist / Person</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="spTarget">Select Event or Artist</label>
+              <select id="spTarget" class="select"></select>
+            </div>
+            <div class="field-group">
+              <label for="spTier">Sponsorship Tier</label>
+              <select id="spTier" class="select">
+                <option value="Supporter|2500">Supporter — ₹2,500</option>
+                <option value="Silver Patron|10000">Silver Patron — ₹10,000</option>
+                <option value="Gold Stage Partner|25000">Gold Stage Partner — ₹25,000</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="spMessage">Dedication / Message</label>
+              <input id="spMessage" class="input" placeholder="Why you're supporting this stage..." />
+            </div>
+            <button type="submit" class="btn btn-primary">Confirm Sponsorship</button>
+          </form>
+        </div>
+        <div>
+          <h3 style="font-size:1.25rem; font-weight:800; margin-bottom:1rem;">Active Patrons &amp; Sponsors</h3>
+          <div id="sponsorsWall" style="display:grid; gap:0.85rem;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ACCOUNT VIEW -->
+    <section id="view-account" class="view-section">
+      <div id="accountContainer"></div>
+    </section>
+  </main>
+
+  <!-- REAL WEBSITE FOOTER WITH CONTACT DETAILS -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-col">
+        <div class="brand" style="margin-bottom:0.75rem;">
+          <span class="eq-bars" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+          <span>MoxieOn</span>
+        </div>
+        <p style="font-size:0.86rem; color:rgba(255,255,255,0.68);">Discover, book, and experience live concerts across India with interactive seat maps, express snack pre-orders, and direct artist patronage.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><button data-goto="home">Home</button></li>
+          <li><button data-goto="events">Upcoming Events</button></li>
+          <li><button data-goto="mixes">Mixes &amp; Lineup</button></li>
+          <li><button data-goto="gallery">Event Gallery</button></li>
+          <li><button data-goto="sponsors">Sponsors</button></li>
+          <li><button data-goto="account">My Account</button></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Genres &amp; Experiences</h4>
+        <ul>
+          <li><button data-vibe-jump="Hip-Hop">Hip-Hop &amp; Rap Nights</button></li>
+          <li><button data-vibe-jump="Orchestral">Orchestral Symphonies</button></li>
+          <li><button data-vibe-jump="Indie Singer">Indie Singer Showcases</button></li>
+          <li><button data-vibe-jump="DJ &amp; Electronic">DJ &amp; Electronic Festivals</button></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact Us</h4>
+        <ul>
+          <li>📍 42 Cathedral Road, Gopalapuram, Chennai, TN 600086</li>
+          <li>📞 +91 44 4812 9040</li>
+          <li>✉️ hello@moxieon.in</li>
+          <li>🕒 Mon – Sun: 10:00 AM – 10:00 PM IST</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 MoxieOn Live Entertainment Pvt. Ltd. All rights reserved.</span>
+      <span>Privacy Policy • Terms of Service • Refund &amp; Entry Guidelines</span>
+    </div>
+  </footer>
+
+  <!-- MODALS -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal-panel">
+      <button class="modal-close" data-close="authModal">✕</button>
+      <div id="authModalBody"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="bookingModal">
+    <div class="modal-panel">
+      <button class="modal-close" data-close="bookingModal">✕</button>
+      <div id="bookingModalBody"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="ticketModal">
+    <div class="modal-panel">
+      <button class="modal-close" data-close="ticketModal">✕</button>
+      <div id="ticketModalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
