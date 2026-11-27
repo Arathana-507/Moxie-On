@@ -1,13 +1,13 @@
 {
-  "name": "moxieon-event-booking",
+  "name": "aurastage-event-booking",
   "version": "1.0.0",
-  "description": "MoxieOn — Full-stack Event Booking, Seat Selection, Digital Ticketing, Snack Pre-Order & Sponsorship Platform built with HTML, CSS, JavaScript, and Node.js.",
+  "description": "AuraStage — Full-stack Event Booking, Digital Ticketing, Snack Pre-Order & Sponsorship Platform built with HTML, CSS, JavaScript, and Node.js.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js"
   },
-  "keywords": ["moxieon", "event-booking", "concerts", "nodejs", "tickets", "sponsors"],
+  "keywords": ["event-booking", "concerts", "nodejs", "tickets", "sponsors"],
   "license": "MIT",
   "engines": {
     "node": ">=16.0.0"

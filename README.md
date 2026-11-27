@@ -1,20 +1,46 @@
-# MoxieOn — Live Concert & Event Booking System
+# 🎵 MoxieOn — Live Concert & Event Booking Platform
 
-A full-stack **HTML, CSS, JavaScript, and Node.js** event booking platform with zero external npm dependencies.
+A zero-dependency, full-stack concert and live event discovery platform built with vanilla **HTML, CSS, JavaScript, and Node.js**. Designed with a soothing lavender-mist and midnight-indigo aesthetic, MoxieOn delivers a complete end-to-end ticketing experience—from personalized event discovery to interactive seat locking and digital QR passes.
 
-## Features
-- **Soothing Vibrant Theme**: Soft lavender-mist canvas, midnight-indigo hero & detail banners, and rose-violet accents.
-- **Home & Personalization**: Showcases *Browse by Vibe*, *Upcoming Concert Posters* tailored to user interests after login/onboarding, *Best Events Happened Ever* (Hall of Fame), *How MoxieOn Works*, *Audience Reviews*, and full contact footer.
-- **Advanced Concert Filters**: Search by keyword, date, category (Hip-Hop, Orchestral, Indie Singer, DJ & Electronic), minimum rating, city/venue, artist, price slider, *No service fee*, and *Hide events I've attended*, plus Grid/List views.
-- **Event Detail & Live Countdown**: Live ticking `Days / Hours / Minutes / Seconds` countdown, staggered photo collage, highlights, and artist set times.
-- **Interactive Seat Map, Snack Pre-Order & Digital QR Ticket**: Pick seats on a live stage map with a 10-minute lock timer, apply promo code (`MOXIE15`), pre-order snacks & beverages for express pickup, choose payment method, and receive a printable Digital QR Pass.
-- **Sponsors & Account**: Sponsor an upcoming event or an independent artist directly, and manage profile interests, active QR passes, and booking history.
+---
 
-## Quick Start
-1. Ensure Node.js (`>= 16`) is installed.
-2. Run:
+## ✨ Key Features
+
+### 🎨 Design & Personalized Discovery
+* **Soothing Vibrant UI:** Built on a soft lavender-mist canvas paired with midnight-indigo hero banners and rose-violet accents.
+* **Tailored Home Feed:** Features *Browse by Vibe*, personalized concert recommendations post-login, a *Hall of Fame* of iconic past events, audience reviews, and a step-by-step guide on how MoxieOn works.
+* **Flexible Layouts:** Switch seamlessly between **Grid** and **List** views when browsing upcoming shows.
+
+### 🔍 Smart Concert Filtering
+* Filter events dynamically by **keyword, date, genre** (*Hip-Hop, Orchestral, Indie Singer, DJ & Electronic*), **city/venue, artist, minimum rating**, and a **custom price range slider**.
+* Toggle quick filters for **No Service Fee** events or **Hide Events I've Attended**.
+
+### ⏳ Event Details & Live Countdown
+* Real-time ticking countdown timer (**Days / Hours / Minutes / Seconds**) leading up to showtime.
+* Staggered photo collages, event highlights, and detailed artist set times.
+
+### 🎟️ Interactive Checkout & Digital QR Pass
+* **Live Stage Seat Map:** Select your exact seats with an active **10-minute seat lock timer**.
+* **Express Snack Pre-Order:** Add food and beverages to your ticket order for express venue pickup.
+* **Promos & Payments:** Apply promo codes (try `MOXIE15`), select a payment method, and generate a printable **Digital QR Ticket**.
+
+### 🤝 Sponsorships & User Dashboard
+* Sponsor upcoming concerts or back independent artists directly through the platform.
+* Manage user profile interests, view active QR passes, and track past booking history.
+
+---
+
+## 🛠️ Tech Stack
+
+* **Frontend:** HTML5, CSS3, Vanilla JavaScript
+* **Backend:** Node.js (Native HTTP & file modules — *zero external `npm` dependencies*)
+
+---
+
+## 🚀 Quick Start (Run Locally)
+
+1. **Prerequisites:** Ensure [Node.js](https://nodejs.org/) (`v16` or higher) is installed on your machine.
+2. **Clone the repository:**
    ```bash
-   node server.js
-   ```
-3. Open `http://localhost:3000` in your browser.
-4. Use **1-Click Demo Login** (`arathana@moxieon.in` / `Moxie@2026`) or create a new account.
+   git clone [https://github.com/Arathana-507/Moxie-On.git](https://github.com/Arathana-507/Moxie-On.git)
+   cd Moxie-On

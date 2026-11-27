@@ -1,4 +1,4 @@
-/* MoxieOn Frontend Application — Node.js REST API + Seamless Offline/File Fallback */
+/* AuraStage Frontend Application — Dual-Mode: Node.js REST API + Automatic Local Fallback */
 const IMAGE_MAP = {
   hero: 'images/hero.jpg',
   hiphop: 'images/hiphop.jpg',
@@ -15,59 +15,10 @@ const ARTISTS_TO_SPONSOR = [
   'Paal Dabba (Hip-Hop MC)',
   'Tanya Nambiar (Deep House DJ)'
 ];
-const SEAT_LAYOUT = [
-  'A1','A2','A3','A4','A5','A6','A7','A8',
-  'B1','B2','B3','B4','B5','B6','B7','B8'
-];
-const SOLD_SEATS = new Set(['A4', 'A5', 'B3']);
 
-const state = {
-  user: null,
-  events: [],
-  snacks: [],
-  bookings: [],
-  sponsors: [],
-  currentView: 'home',
-  selectedEventId: null,
-  sortMode: 'Recommended',
-  listMode: false,
-  countdownTimer: null,
-  holdTimer: null,
-  holdSeconds: 600,
-  audioCtx: null,
-  activeMixId: null,
-  bookingDraft: null
-};
-
-// ---------- Helpers ----------
-function esc(str) {
-  return String(str || '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-  }[c]));
-}
-
-function fmtINR(num) {
-  return '₹' + Number(num || 0).toLocaleString('en-IN');
-}
-
-function fmtDate(iso) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) +
-    ' • ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-}
-
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 3400);
-}
-
-// ---------- Fallback Local Store (for file:// or Canvas standalone) ----------
 const LOCAL_SEED = {
   users: [{
-    id: 'usr_demo_1', name: 'Arathana N.', email: 'arathana@moxieon.in',
+    id: 'usr_demo_1', name: 'Arathana N.', email: 'arathana@aurastage.in',
     phone: '+91 98401 23456', city: 'Chennai',
     interests: ['Indie Singer', 'Orchestral', 'DJ & Electronic'],
     onboardingComplete: true, attendedEventIds: ['evt_past_1', 'evt_past_2'],
@@ -130,7 +81,7 @@ const LOCAL_SEED = {
       tiers: [{ id: 'gen', name: 'Courtyard Seat', price: 799, perks: 'Reserved courtyard chair' }, { id: 'vip', name: 'Royal Box', price: 2499, perks: 'Front-row table + meet & greet' }]
     },
     {
-      id: 'evt_6', status: 'upcoming', title: 'MoxieOn Bass Arena: Hip-Hop & Trap Showcase',
+      id: 'evt_6', status: 'upcoming', title: 'Aura Bass Arena: Hip-Hop & Trap Showcase',
       category: 'Hip-Hop', artist: 'Divine & Hanumankind', city: 'Chennai',
       venue: 'Island Grounds Dome', date: '2027-01-09T19:00:00+05:30',
       priceMin: 999, priceMax: 4499, rating: 4.9, reviewsCount: 410, noServiceFee: true,
@@ -145,7 +96,7 @@ const LOCAL_SEED = {
       category: 'Orchestral', artist: 'A.R. Rahman Ensemble & Symphony', city: 'Chennai',
       venue: 'Nehru Indoor Stadium', date: '2025-11-14T19:00:00+05:30',
       priceMin: 1500, rating: 4.98, reviewsCount: 4820, attendance: '18,400+ Attendees', imageKey: 'orchestral',
-      description: 'Voted MoxieOn Best Event Ever — a sold-out 18,000-strong symphonic tribute blending classical strings, choir, and spatial surround audio.'
+      description: 'Voted AuraStage Best Event Ever — a sold-out 18,000-strong symphonic tribute blending classical strings, choir, and spatial surround audio.'
     },
     {
       id: 'evt_past_2', status: 'past', title: 'Neon Monsoon: Midnight Electronic Odyssey',
@@ -162,6 +113,14 @@ const LOCAL_SEED = {
       description: 'Three generations of independent Indian songwriting united on one sunlit-to-moonlit stage with acoustic sing-alongs.'
     }
   ],
+  gallery: [
+    { id: 'gal_1', title: 'Echoes of Marina Finale', category: 'Orchestral', city: 'Chennai', year: '2025', caption: '45-piece string ensemble under soothing lavender-blue hall acoustics.', imageKey: 'orchestral', eventId: 'evt_past_1', featured: true },
+    { id: 'gal_2', title: '808 Drift Cypher Spotlight', category: 'Hip-Hop', city: 'Bengaluru', year: '2026', caption: 'Live brass & 808s lighting up the open-air arena.', imageKey: 'hiphop', eventId: 'evt_2', featured: false },
+    { id: 'gal_3', title: 'Velvet Horizon Sunset Session', category: 'Indie Singer', city: 'Chennai', year: '2026', caption: 'Intimate acoustic harmonies bathed in warm rose stage glow.', imageKey: 'indie', eventId: 'evt_3', featured: false },
+    { id: 'gal_4', title: 'Solstice Coastal Laser Mapping', category: 'DJ & Electronic', city: 'Goa', year: '2026', caption: 'Synchronized indigo & magenta beams over Vagator Hilltop.', imageKey: 'dj', eventId: 'evt_4', featured: true },
+    { id: 'gal_5', title: 'AuraStage Opening Night Crowd', category: 'DJ & Electronic', city: 'Bengaluru', year: '2026', caption: '12,000+ fans singing every chorus in unison.', imageKey: 'hero', eventId: 'evt_past_2', featured: false },
+    { id: 'gal_6', title: 'Royal Opera Courtyard Encore', category: 'Indie Singer', city: 'Mumbai', year: '2026', caption: 'Candlelit neo-soul & brass quartet under heritage arches.', imageKey: 'indie', eventId: 'evt_5', featured: false }
+  ],
   snacks: [
     { id: 'snk_1', name: 'Classic Sea-Salt Popcorn', price: 180, category: 'Snacks', tag: 'Veg', prep: 'Ready at Gate B' },
     { id: 'snk_2', name: 'Loaded Peri-Peri Nachos', price: 260, category: 'Snacks', tag: 'Veg', prep: 'Warm cheese dip' },
@@ -174,14 +133,14 @@ const LOCAL_SEED = {
     {
       id: 'BK-904821', userId: 'usr_demo_1', eventId: 'evt_1',
       eventTitle: 'Midnight Symphony: Strings & Synth', venue: 'Sir Mutha Venkatasubba Rao Concert Hall, Chennai',
-      eventDate: '2026-12-18T19:30:00+05:30', tierName: 'VIP Orchestra Pit', seats: ['A3', 'A4'], quantity: 2,
+      eventDate: '2026-12-18T19:30:00+05:30', tierName: 'VIP Orchestra Pit', quantity: 2,
       snacks: [{ id: 'snk_2', name: 'Loaded Peri-Peri Nachos', qty: 1, price: 260 }, { id: 'snk_4', name: 'Iced Lavender Cold Brew', qty: 2, price: 210 }],
       paymentMethod: 'UPI (GPay)', discount: 0, totalAmount: 6678, status: 'Confirmed'
     },
     {
       id: 'BK-773109', userId: 'usr_demo_1', eventId: 'evt_past_1',
       eventTitle: 'Echoes of Marina: 2025 Symphony Under Stars', venue: 'Nehru Indoor Stadium, Chennai',
-      eventDate: '2025-11-14T19:00:00+05:30', tierName: 'General Balcony', seats: ['B6', 'B7'], quantity: 2,
+      eventDate: '2025-11-14T19:00:00+05:30', tierName: 'General Balcony', quantity: 2,
       snacks: [], paymentMethod: 'Debit Card', discount: 0, totalAmount: 3000, status: 'Attended'
     }
   ],
@@ -192,68 +151,112 @@ const LOCAL_SEED = {
   ]
 };
 
-let MEM_DB = JSON.parse(JSON.stringify(LOCAL_SEED));
-let MEM_UID = null;
+let LOCAL_DB = JSON.parse(JSON.stringify(LOCAL_SEED));
+let LOCAL_UID = null;
 try {
-  const saved = localStorage.getItem('moxieon_db');
-  if (saved) MEM_DB = JSON.parse(saved);
-  MEM_UID = localStorage.getItem('moxieon_uid');
+  const saved = localStorage.getItem('aurastage_db_v2');
+  if (saved) LOCAL_DB = JSON.parse(saved);
+  LOCAL_UID = localStorage.getItem('aurastage_uid_v2');
 } catch {}
 
-function saveLocal() {
+function saveLocalDB() {
   try {
-    localStorage.setItem('moxieon_db', JSON.stringify(MEM_DB));
-    if (MEM_UID) localStorage.setItem('moxieon_uid', MEM_UID);
-    else localStorage.removeItem('moxieon_uid');
+    localStorage.setItem('aurastage_db_v2', JSON.stringify(LOCAL_DB));
+    if (LOCAL_UID) localStorage.setItem('aurastage_uid_v2', LOCAL_UID);
+    else localStorage.removeItem('aurastage_uid_v2');
   } catch {}
+}
+
+const state = {
+  user: null,
+  events: [],
+  gallery: [],
+  snacks: [],
+  bookings: [],
+  sponsors: [],
+  currentView: 'home',
+  selectedEventId: null,
+  sortMode: 'Recommended',
+  galleryFilter: 'All',
+  lightboxIndex: 0,
+  listMode: false,
+  countdownTimer: null,
+  audioCtx: null,
+  activeMixId: null,
+  bookingDraft: null,
+  usingNodeBackend: false
+};
+
+// ---------- Helpers ----------
+function esc(str) {
+  return String(str || '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function fmtINR(num) {
+  return '₹' + Number(num || 0).toLocaleString('en-IN');
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) +
+    ' • ' + d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+function updateBackendBadge(isLive) {
+  state.usingNodeBackend = isLive;
+  const dot = document.getElementById('backendStatusDot');
+  const txt = document.getElementById('backendStatusText');
+  if (!dot || !txt) return;
+  dot.classList.toggle('offline', !isLive);
+  txt.textContent = isLive ? 'Node.js API Connected' : 'Standalone Local Mode';
 }
 
 function localApi(url, opts = {}) {
   const body = opts.body ? JSON.parse(opts.body) : {};
-  if (url === '/api/events') return { events: MEM_DB.events, snacks: MEM_DB.snacks };
-  if (url === '/api/sponsors' && (!opts.method || opts.method === 'GET')) return { sponsors: MEM_DB.sponsors };
+  if (url === '/api/events') return { events: LOCAL_DB.events, snacks: LOCAL_DB.snacks, gallery: LOCAL_DB.gallery };
+  if (url === '/api/gallery') return { gallery: LOCAL_DB.gallery };
+  if (url === '/api/sponsors' && (!opts.method || opts.method === 'GET')) return { sponsors: LOCAL_DB.sponsors };
   if (url === '/api/sponsors' && opts.method === 'POST') {
     const entry = { id: 'spn_' + Date.now(), ...body };
-    MEM_DB.sponsors.unshift(entry);
-    saveLocal();
+    LOCAL_DB.sponsors.unshift(entry);
+    saveLocalDB();
     return { sponsor: entry };
   }
   if (url === '/api/auth/me') {
-    const u = MEM_DB.users.find(x => x.id === MEM_UID);
-    if (!u) throw new Error('Not signed in');
+    const u = LOCAL_DB.users.find(x => x.id === LOCAL_UID);
+    if (!u) throw new Error('Not authenticated');
     return { user: u };
   }
   if (url === '/api/auth/login') {
-    const email = String(body.email || '').trim().toLowerCase();
-    const u = MEM_DB.users.find(x => x.email === email) || (email === 'arathana@moxieon.in' ? MEM_DB.users[0] : null);
-    if (!u) throw new Error('No account found with that email. Create one or use Demo Login!');
-    MEM_UID = u.id;
-    saveLocal();
+    const u = LOCAL_DB.users.find(x => x.email === String(body.email || '').toLowerCase()) || LOCAL_DB.users[0];
+    LOCAL_UID = u.id;
+    saveLocalDB();
     return { user: u };
   }
   if (url === '/api/auth/register') {
-    const name = String(body.name || '').trim();
-    const email = String(body.email || '').trim().toLowerCase();
-    const pass = String(body.password || '');
-    if (!name || !email.includes('@') || pass.length < 4) {
-      throw new Error('Please enter your name, a valid email, and a 4+ character password.');
-    }
-    if (MEM_DB.users.some(x => x.email === email)) {
-      throw new Error('An account with this email already exists. Try signing in!');
-    }
     const u = {
-      id: 'usr_' + Date.now(), name, email,
+      id: 'usr_' + Date.now(), name: body.name, email: body.email.toLowerCase(),
       city: body.city || 'Chennai', interests: [], onboardingComplete: false,
       attendedEventIds: [], savedEventIds: []
     };
-    MEM_DB.users.push(u);
-    MEM_UID = u.id;
-    saveLocal();
+    LOCAL_DB.users.push(u);
+    LOCAL_UID = u.id;
+    saveLocalDB();
     return { user: u };
   }
-  if (url === '/api/auth/logout') { MEM_UID = null; saveLocal(); return { ok: true }; }
+  if (url === '/api/auth/logout') { LOCAL_UID = null; saveLocalDB(); return { ok: true }; }
   if (url === '/api/user/preferences') {
-    const u = MEM_DB.users.find(x => x.id === MEM_UID);
+    const u = LOCAL_DB.users.find(x => x.id === LOCAL_UID);
     if (!u) throw new Error('Please sign in first');
     if (Array.isArray(body.interests)) { u.interests = body.interests; u.onboardingComplete = true; }
     if (body.city) u.city = body.city;
@@ -261,40 +264,41 @@ function localApi(url, opts = {}) {
       if (u.savedEventIds.includes(body.toggleSavedEventId)) u.savedEventIds = u.savedEventIds.filter(i => i !== body.toggleSavedEventId);
       else u.savedEventIds.push(body.toggleSavedEventId);
     }
-    saveLocal();
+    saveLocalDB();
     return { user: u };
   }
   if (url === '/api/bookings' && (!opts.method || opts.method === 'GET')) {
-    return { bookings: MEM_DB.bookings.filter(b => b.userId === MEM_UID) };
+    return { bookings: LOCAL_DB.bookings.filter(b => b.userId === LOCAL_UID) };
   }
   if (url === '/api/bookings' && opts.method === 'POST') {
-    const ev = MEM_DB.events.find(e => e.id === body.eventId);
+    const ev = LOCAL_DB.events.find(e => e.id === body.eventId);
     const tier = ev.tiers.find(t => t.id === body.tierId);
     const snacks = (body.snacks || []).map(s => {
-      const ref = MEM_DB.snacks.find(x => x.id === s.id);
+      const ref = LOCAL_DB.snacks.find(x => x.id === s.id);
       return { id: ref.id, name: ref.name, qty: s.qty, price: ref.price };
     });
     const tSub = tier.price * body.quantity;
     const sSub = snacks.reduce((a, b) => a + b.price * b.qty, 0);
     const fee = ev.noServiceFee ? 0 : Math.round(tSub * 0.05);
-    const disc = String(body.coupon || '').trim().toUpperCase() === 'MOXIE15' ? Math.round(tSub * 0.15) : 0;
+    const disc = String(body.coupon || '').trim().toUpperCase() === 'AURA15' ? Math.round(tSub * 0.15) : 0;
     const bk = {
       id: 'BK-' + Math.floor(100000 + Math.random() * 900000),
-      userId: MEM_UID, eventId: ev.id, eventTitle: ev.title,
+      userId: LOCAL_UID, eventId: ev.id, eventTitle: ev.title,
       venue: ev.venue + ', ' + ev.city, eventDate: ev.date,
-      tierName: tier.name, seats: body.seats || [], quantity: body.quantity, snacks,
+      tierName: tier.name, quantity: body.quantity, snacks,
       paymentMethod: body.paymentMethod, discount: disc,
       totalAmount: Math.max(0, tSub + sSub + fee - disc), status: 'Confirmed'
     };
-    MEM_DB.bookings.unshift(bk);
-    saveLocal();
+    LOCAL_DB.bookings.unshift(bk);
+    saveLocalDB();
     return { booking: bk };
   }
   throw new Error('Unknown route');
 }
 
 async function api(url, opts = {}) {
-  if (window.location.protocol === 'file:' || window.location.protocol === 'about:' || window.location.hostname === '') {
+  if (window.location.protocol === 'file:') {
+    updateBackendBadge(false);
     return localApi(url, opts);
   }
   try {
@@ -304,10 +308,12 @@ async function api(url, opts = {}) {
       ...opts
     });
     const data = await res.json().catch(() => ({}));
+    updateBackendBadge(true);
     if (!res.ok) throw new Error(data.error || 'Request failed');
     return data;
   } catch (err) {
-    if (err.name === 'TypeError' || String(err.message).includes('Failed to fetch')) {
+    if (err instanceof TypeError || /Failed to fetch|NetworkError/i.test(err.message)) {
+      updateBackendBadge(false);
       return localApi(url, opts);
     }
     throw err;
@@ -341,24 +347,6 @@ function generateQRSVG(seedText) {
   return `<svg width="126" height="126" viewBox="0 0 126 126" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Digital Ticket QR">${rects.join('')}</svg>`;
 }
 
-// ---------- Scroll Reveal Observer ----------
-function setupScrollReveal() {
-  const els = document.querySelectorAll('.reveal');
-  if (!('IntersectionObserver' in window)) {
-    els.forEach(el => el.classList.add('in-view'));
-    return;
-  }
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('in-view');
-        obs.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.08 });
-  els.forEach(el => obs.observe(el));
-}
-
 // ---------- Navigation ----------
 function switchView(view) {
   state.currentView = view;
@@ -368,29 +356,30 @@ function switchView(view) {
   document.querySelectorAll('.nav-link').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.view === view);
   });
-  const drawer = document.getElementById('mobileMenuDrawer');
+  const drawer = document.getElementById('mobileDrawer');
   if (drawer) drawer.classList.remove('open');
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (view === 'account') renderAccount();
   if (view === 'sponsors') renderSponsors();
-  setupScrollReveal();
+  if (view === 'gallery') renderGallery();
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-  if (id === 'bookingModal') clearInterval(state.holdTimer);
-}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 // ---------- Initialization ----------
 async function init() {
   try {
     const [evRes, spRes] = await Promise.all([api('/api/events'), api('/api/sponsors')]);
-    state.events = evRes.events || [];
-    state.snacks = evRes.snacks || [];
-    state.sponsors = spRes.sponsors || [];
-  } catch (err) {
-    showToast('Could not load events: ' + err.message);
+    state.events = evRes.events || LOCAL_SEED.events;
+    state.snacks = evRes.snacks || LOCAL_SEED.snacks;
+    state.gallery = evRes.gallery || LOCAL_SEED.gallery;
+    state.sponsors = spRes.sponsors || LOCAL_SEED.sponsors;
+  } catch {
+    state.events = LOCAL_SEED.events;
+    state.snacks = LOCAL_SEED.snacks;
+    state.gallery = LOCAL_SEED.gallery;
+    state.sponsors = LOCAL_SEED.sponsors;
   }
 
   try {
@@ -405,14 +394,14 @@ async function init() {
   updateNavAuth();
   renderHome();
   renderEventsCatalog();
-  renderMixesAndGallery();
+  renderMixes();
+  renderGallery();
   populateSponsorTargets();
   renderSponsors();
-  setupScrollReveal();
 }
 
 async function loadUserBookings() {
-  if (!state.user) { state.bookings = []; return; }
+  if (!state.user) { state.bookings = []; updateNavAuth(); return; }
   try {
     const res = await api('/api/bookings');
     state.bookings = res.bookings || [];
@@ -430,6 +419,7 @@ function updateNavAuth() {
   authBtn.textContent = state.user ? state.user.name.split(' ')[0] : 'Sign In';
 }
 
+// ---------- Render Event Card ----------
 function eventCardHTML(ev) {
   const isSaved = state.user && (state.user.savedEventIds || []).includes(ev.id);
   const img = IMAGE_MAP[ev.imageKey] || IMAGE_MAP.hero;
@@ -458,9 +448,11 @@ function eventCardHTML(ev) {
   `;
 }
 
+// ---------- Home Rendering ----------
 function renderHome() {
   const upcoming = state.events.filter(e => e.status === 'upcoming');
   const past = state.events.filter(e => e.status === 'past');
+
   const eyebrow = document.getElementById('recEyebrow');
   const heading = document.getElementById('recHeading');
 
@@ -482,6 +474,7 @@ function renderHome() {
   document.getElementById('bestEventsGrid').innerHTML = past.map(eventCardHTML).join('');
 }
 
+// ---------- Events Catalog & Filters ----------
 function getFilteredEvents() {
   const q = document.getElementById('fSearch').value.trim().toLowerCase();
   const dateVal = document.getElementById('fDate').value;
@@ -493,7 +486,7 @@ function getFilteredEvents() {
   const noFee = document.getElementById('fNoFee').checked;
   const hideAttended = document.getElementById('fHideAttended').checked;
 
-  let list = state.events.filter(ev => {
+  const list = state.events.filter(ev => {
     if (ev.status !== 'upcoming') return false;
     if (cat !== 'All' && ev.category !== cat) return false;
     if (city !== 'All' && ev.city !== city) return false;
@@ -563,7 +556,7 @@ function openEventDetail(eventId) {
             <div class="cd-box"><div class="cd-num" id="cdSecs">00</div><div class="cd-lbl">Seconds</div></div>
           </div>
           <div style="display:flex; justify-content:center; gap:0.85rem; flex-wrap:wrap;">
-            <button class="btn btn-rose" id="detailBookBtn">Select Seats &amp; Pre-Order Snacks</button>
+            <button class="btn btn-rose" id="detailBookBtn">Book Tickets &amp; Pre-Order Snacks</button>
             <button class="btn btn-ghost" id="detailSponsorBtn">Sponsor This Event</button>
           </div>
         ` : `<div style="margin-top:1.5rem;"><span class="hero-pill">${esc(ev.attendance || 'Historic Sold-Out Night')}</span></div>`}
@@ -579,7 +572,7 @@ function openEventDetail(eventId) {
         <h2 class="section-title" style="margin-bottom:0.75rem;">${esc(ev.artist)}</h2>
         <p style="color:var(--ink-muted);">${esc(ev.description)}</p>
         ${ev.highlights ? `<ul class="highlight-list">${ev.highlights.map(h => `<li>${esc(h)}</li>`).join('')}</ul>` : ''}
-        ${!isPast ? `<button class="btn btn-primary" id="detailBookBtn2">Book Tickets from ${fmtINR(ev.priceMin)}</button>` : ''}
+        ${!isPast ? `<button class="btn btn-primary" id="detailBookBtn2">Reserve Passes from ${fmtINR(ev.priceMin)}</button>` : ''}
       </div>
     </div>
 
@@ -635,7 +628,7 @@ function openEventDetail(eventId) {
   }
 }
 
-// ---------- Booking + Interactive Seat Map + Snack Pre-Order ----------
+// ---------- Booking + Snack Pre-Order + Payment Flow ----------
 function openBookingFlow(eventId) {
   if (!state.user) {
     showToast('Please sign in first to book tickets.');
@@ -649,23 +642,10 @@ function openBookingFlow(eventId) {
     event: ev,
     tierId: ev.tiers[0].id,
     quantity: 1,
-    seats: ['A1'],
     snacks: {},
     coupon: '',
     paymentMethod: 'UPI (GPay / PhonePe)'
   };
-  state.holdSeconds = 600;
-  clearInterval(state.holdTimer);
-  state.holdTimer = setInterval(() => {
-    state.holdSeconds = Math.max(0, state.holdSeconds - 1);
-    const el = document.getElementById('holdTimerBadge');
-    if (el) {
-      const m = String(Math.floor(state.holdSeconds / 60)).padStart(2, '0');
-      const s = String(state.holdSeconds % 60).padStart(2, '0');
-      el.textContent = `Seats locked for ${m}:${s}`;
-    }
-  }, 1000);
-
   renderBookingModal();
   openModal('bookingModal');
 }
@@ -674,43 +654,21 @@ function renderBookingModal() {
   const d = state.bookingDraft;
   const ev = d.event;
   const tier = ev.tiers.find(t => t.id === d.tierId) || ev.tiers[0];
-  const qty = Math.max(1, d.seats.length || d.quantity);
-  d.quantity = qty;
-  const ticketSubtotal = tier.price * qty;
+  const ticketSubtotal = tier.price * d.quantity;
   let snacksTotal = 0;
-  for (const s of state.snacks) {
-    snacksTotal += (d.snacks[s.id] || 0) * s.price;
-  }
+  for (const s of state.snacks) snacksTotal += (d.snacks[s.id] || 0) * s.price;
   const serviceFee = ev.noServiceFee ? 0 : Math.round(ticketSubtotal * 0.05);
-  const couponApplied = d.coupon.trim().toUpperCase() === 'MOXIE15';
+  const couponApplied = d.coupon.trim().toUpperCase() === 'AURA15';
   const discount = couponApplied ? Math.round(ticketSubtotal * 0.15) : 0;
   const grandTotal = Math.max(0, ticketSubtotal + snacksTotal + serviceFee - discount);
-  const m = String(Math.floor(state.holdSeconds / 60)).padStart(2, '0');
-  const s = String(state.holdSeconds % 60).padStart(2, '0');
 
   document.getElementById('bookingModalBody').innerHTML = `
-    <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; flex-wrap:wrap; margin-bottom:0.35rem;">
-      <div class="section-eyebrow" style="margin:0;">MoxieOn Checkout</div>
-      <span class="badge-count" id="holdTimerBadge" style="background:var(--primary);">Seats locked for ${m}:${s}</span>
-    </div>
-    <h2 style="font-size:1.35rem; font-weight:800; margin-bottom:0.2rem;">${esc(ev.title)}</h2>
-    <p style="font-size:0.86rem; color:var(--ink-muted); margin-bottom:1rem;">${esc(ev.venue)}, ${esc(ev.city)}</p>
+    <div class="section-eyebrow">Instant Booking</div>
+    <h2 style="font-size:1.35rem; font-weight:800; margin-bottom:0.25rem;">${esc(ev.title)}</h2>
+    <p style="font-size:0.86rem; color:var(--ink-muted); margin-bottom:1.1rem;">${esc(ev.venue)}, ${esc(ev.city)}</p>
 
-    <h4 style="font-size:0.82rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--primary); margin-bottom:0.45rem;">1. Interactive Stage &amp; Seat Map</h4>
-    <div class="seat-map-box">
-      <div class="stage-arc">MAIN STAGE</div>
-      <div class="seat-grid">
-        ${SEAT_LAYOUT.map(seat => {
-          const isSold = SOLD_SEATS.has(seat);
-          const isSel = d.seats.includes(seat);
-          return `<button type="button" class="seat-btn ${isSold ? 'sold' : ''} ${isSel ? 'selected' : ''}" data-seat="${seat}" ${isSold ? 'disabled' : ''}>${seat}</button>`;
-        }).join('')}
-      </div>
-      <div style="font-size:0.76rem; color:var(--ink-muted);">Selected Seats: <strong>${d.seats.length ? esc(d.seats.join(', ')) : 'None'}</strong> (${qty} pass${qty > 1 ? 'es' : ''})</div>
-    </div>
-
-    <h4 style="font-size:0.82rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--primary); margin-bottom:0.45rem;">2. Select Ticket Tier</h4>
-    <div style="display:grid; gap:0.45rem; margin-bottom:1rem;">
+    <h4 style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--primary); margin-bottom:0.5rem;">1. Select Ticket Type &amp; Quantity</h4>
+    <div style="display:grid; gap:0.5rem; margin-bottom:0.9rem;">
       ${ev.tiers.map(t => `
         <label class="stepper-row" style="cursor:pointer; border-color:${t.id === d.tierId ? 'var(--primary)' : 'var(--border)'}; background:${t.id === d.tierId ? 'var(--surface-tint)' : '#fff'};">
           <div>
@@ -722,34 +680,42 @@ function renderBookingModal() {
         </label>
       `).join('')}
     </div>
+    <div class="stepper-row" style="margin-bottom:1.15rem;">
+      <span><strong>Number of Passes</strong></span>
+      <div class="stepper-controls">
+        <button class="step-btn" id="qtyMinus">-</button>
+        <strong style="min-width:22px; text-align:center;">${d.quantity}</strong>
+        <button class="step-btn" id="qtyPlus">+</button>
+      </div>
+    </div>
 
-    <h4 style="font-size:0.82rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--primary); margin-bottom:0.45rem;">3. Pre-Order Snacks &amp; Drinks</h4>
-    <div style="max-height:175px; overflow-y:auto; padding-right:0.25rem; margin-bottom:0.9rem;">
-      ${state.snacks.map(sn => {
-        const q = d.snacks[sn.id] || 0;
+    <h4 style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--primary); margin-bottom:0.5rem;">2. Pre-Order Snacks &amp; Drinks (Express Counter)</h4>
+    <div style="max-height:190px; overflow-y:auto; padding-right:0.25rem; margin-bottom:1rem;">
+      ${state.snacks.map(s => {
+        const q = d.snacks[s.id] || 0;
         return `
           <div class="stepper-row">
             <div>
-              <strong>${esc(sn.name)}</strong> <small style="color:var(--primary);">(${esc(sn.tag)})</small>
-              <div style="font-size:0.76rem; color:var(--ink-muted);">${fmtINR(sn.price)} • ${esc(sn.prep)}</div>
+              <strong>${esc(s.name)}</strong> <small style="color:var(--primary);">(${esc(s.tag)})</small>
+              <div style="font-size:0.76rem; color:var(--ink-muted);">${fmtINR(s.price)} • ${esc(s.prep)}</div>
             </div>
             <div class="stepper-controls">
-              <button class="step-btn snack-dec" data-sid="${esc(sn.id)}">-</button>
+              <button class="step-btn snack-dec" data-sid="${esc(s.id)}">-</button>
               <strong style="min-width:18px; text-align:center;">${q}</strong>
-              <button class="step-btn snack-inc" data-sid="${esc(sn.id)}">+</button>
+              <button class="step-btn snack-inc" data-sid="${esc(s.id)}">+</button>
             </div>
           </div>
         `;
       }).join('')}
     </div>
 
-    <div style="display:flex; gap:0.5rem; margin-bottom:0.9rem;">
-      <input id="couponInput" class="input" placeholder="Promo code (try MOXIE15)" value="${esc(d.coupon)}" />
+    <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+      <input id="couponInput" class="input" placeholder="Coupon code (try AURA15)" value="${esc(d.coupon)}" />
       <button class="btn btn-soft" id="applyCouponBtn">Apply</button>
     </div>
 
-    <h4 style="font-size:0.82rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--primary); margin-bottom:0.4rem;">4. Payment Method</h4>
-    <select id="payMethodSelect" class="select" style="margin-bottom:0.9rem;">
+    <h4 style="font-size:0.85rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--primary); margin-bottom:0.45rem;">3. Secure Payment Method</h4>
+    <select id="payMethodSelect" class="select" style="margin-bottom:1rem;">
       <option ${d.paymentMethod.includes('UPI') ? 'selected' : ''}>UPI (GPay / PhonePe)</option>
       <option ${d.paymentMethod.includes('Card') ? 'selected' : ''}>Debit / Credit Card</option>
       <option ${d.paymentMethod.includes('Net') ? 'selected' : ''}>Net Banking</option>
@@ -757,50 +723,33 @@ function renderBookingModal() {
     </select>
 
     <div style="background:var(--bg); border-radius:12px; padding:0.9rem; font-size:0.88rem; margin-bottom:1rem;">
-      <div style="display:flex; justify-content:space-between;"><span>Tickets (${qty} × ${fmtINR(tier.price)})</span><span>${fmtINR(ticketSubtotal)}</span></div>
+      <div style="display:flex; justify-content:space-between;"><span>Tickets (${d.quantity} × ${fmtINR(tier.price)})</span><span>${fmtINR(ticketSubtotal)}</span></div>
       <div style="display:flex; justify-content:space-between;"><span>Pre-Ordered Snacks</span><span>${fmtINR(snacksTotal)}</span></div>
-      <div style="display:flex; justify-content:space-between;"><span>Convenience Fee</span><span>${serviceFee === 0 ? 'Free' : fmtINR(serviceFee)}</span></div>
-      ${discount > 0 ? `<div style="display:flex; justify-content:space-between; color:var(--rose);"><span>Promo (MOXIE15)</span><span>-${fmtINR(discount)}</span></div>` : ''}
+      <div style="display:flex; justify-content:space-between;"><span>Service Fee</span><span>${serviceFee === 0 ? 'Free' : fmtINR(serviceFee)}</span></div>
+      ${discount > 0 ? `<div style="display:flex; justify-content:space-between; color:var(--rose);"><span>Promo (AURA15)</span><span>-${fmtINR(discount)}</span></div>` : ''}
       <div style="display:flex; justify-content:space-between; font-size:1.05rem; font-weight:800; margin-top:0.45rem; padding-top:0.45rem; border-top:1px solid var(--border);">
         <span>Total Payable</span><span>${fmtINR(grandTotal)}</span>
       </div>
     </div>
 
-    <button class="btn btn-primary" id="confirmPayBtn" style="width:100%;">Pay ${fmtINR(grandTotal)} &amp; Generate QR Pass</button>
+    <button class="btn btn-primary" id="confirmPayBtn" style="width:100%;">Pay ${fmtINR(grandTotal)} &amp; Get Digital Ticket</button>
   `;
 
-  document.querySelectorAll('.seat-btn:not(.sold)').forEach(btn => {
-    btn.onclick = () => {
-      const seat = btn.dataset.seat;
-      if (d.seats.includes(seat)) {
-        if (d.seats.length > 1) d.seats = d.seats.filter(x => x !== seat);
-      } else if (d.seats.length < 8) {
-        d.seats.push(seat);
-      }
-      renderBookingModal();
-    };
-  });
   document.querySelectorAll('input[name="tierPick"]').forEach(r => {
     r.onchange = () => { d.tierId = r.value; renderBookingModal(); };
   });
+  document.getElementById('qtyMinus').onclick = () => { d.quantity = Math.max(1, d.quantity - 1); renderBookingModal(); };
+  document.getElementById('qtyPlus').onclick = () => { d.quantity = Math.min(10, d.quantity + 1); renderBookingModal(); };
   document.querySelectorAll('.snack-dec').forEach(b => {
-    b.onclick = () => {
-      const id = b.dataset.sid;
-      d.snacks[id] = Math.max(0, (d.snacks[id] || 0) - 1);
-      renderBookingModal();
-    };
+    b.onclick = () => { d.snacks[b.dataset.sid] = Math.max(0, (d.snacks[b.dataset.sid] || 0) - 1); renderBookingModal(); };
   });
   document.querySelectorAll('.snack-inc').forEach(b => {
-    b.onclick = () => {
-      const id = b.dataset.sid;
-      d.snacks[id] = Math.min(10, (d.snacks[id] || 0) + 1);
-      renderBookingModal();
-    };
+    b.onclick = () => { d.snacks[b.dataset.sid] = Math.min(10, (d.snacks[b.dataset.sid] || 0) + 1); renderBookingModal(); };
   });
   document.getElementById('applyCouponBtn').onclick = () => {
     d.coupon = document.getElementById('couponInput').value;
     renderBookingModal();
-    showToast(d.coupon.trim().toUpperCase() === 'MOXIE15' ? '15% MOXIE15 discount applied!' : 'Invalid promo code.');
+    showToast(d.coupon.trim().toUpperCase() === 'AURA15' ? '15% discount applied!' : 'Invalid coupon code.');
   };
   document.getElementById('payMethodSelect').onchange = e => { d.paymentMethod = e.target.value; };
   document.getElementById('confirmPayBtn').onclick = submitBooking;
@@ -815,7 +764,6 @@ async function submitBooking() {
       body: JSON.stringify({
         eventId: d.event.id,
         tierId: d.tierId,
-        seats: d.seats,
         quantity: d.quantity,
         snacks: snacksArr,
         coupon: d.coupon,
@@ -824,7 +772,7 @@ async function submitBooking() {
     });
     closeModal('bookingModal');
     await loadUserBookings();
-    showToast('Booking confirmed! Your digital QR ticket is ready.');
+    showToast('Booking confirmed! Here is your digital QR ticket.');
     openDigitalTicket(res.booking);
   } catch (err) {
     showToast(err.message);
@@ -836,12 +784,11 @@ function openDigitalTicket(bk) {
   const snacksList = (bk.snacks || []).length > 0
     ? bk.snacks.map(s => `<li>${esc(s.qty)} × ${esc(s.name)} (${fmtINR(s.price * s.qty)})</li>`).join('')
     : '<li>No snacks pre-ordered</li>';
-  const seatsStr = (bk.seats && bk.seats.length) ? ` • Seats: ${esc(bk.seats.join(', '))}` : '';
 
   document.getElementById('ticketModalBody').innerHTML = `
     <div class="ticket-pass">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.85rem;">
-        <span style="font-weight:800; letter-spacing:0.06em; color:#C4B5FD;">MOXIEON DIGITAL PASS</span>
+        <span style="font-weight:800; letter-spacing:0.06em; color:#C4B5FD;">AURASTAGE DIGITAL PASS</span>
         <span class="badge-count" style="background:rgba(255,255,255,0.16);">${esc(bk.status)}</span>
       </div>
       <h2 style="font-size:1.35rem; font-weight:800; margin-bottom:0.25rem;">${esc(bk.eventTitle)}</h2>
@@ -854,8 +801,8 @@ function openDigitalTicket(bk) {
         <div>
           <div style="font-size:0.75rem; color:#C4B5FD;">BOOKING ID</div>
           <div style="font-size:1.1rem; font-weight:800; margin-bottom:0.6rem;">${esc(bk.id)}</div>
-          <div style="font-size:0.75rem; color:#C4B5FD;">PASS TIER &amp; SEATS</div>
-          <div style="font-weight:700; margin-bottom:0.6rem;">${esc(bk.tierName)} × ${esc(bk.quantity)}${seatsStr}</div>
+          <div style="font-size:0.75rem; color:#C4B5FD;">PASS TIER</div>
+          <div style="font-weight:700; margin-bottom:0.6rem;">${esc(bk.tierName)} × ${esc(bk.quantity)}</div>
           <div style="font-size:0.75rem; color:#C4B5FD;">PRE-ORDERED SNACKS (EXPRESS GATE)</div>
           <ul style="font-size:0.84rem; padding-left:1rem; margin-top:0.2rem; color:#F5F3FF;">${snacksList}</ul>
         </div>
@@ -868,7 +815,7 @@ function openDigitalTicket(bk) {
         <strong>Total: ${fmtINR(bk.totalAmount)}</strong>
       </div>
     </div>
-    <div style="display:flex; gap:0.75rem; margin-top:1rem; justify-content:flex-end; flex-wrap:wrap;">
+    <div style="display:flex; gap:0.75rem; margin-top:1rem; justify-content:flex-end;">
       <button class="btn btn-soft" onclick="window.print()">Print / Save PDF</button>
       <button class="btn btn-primary" data-close="ticketModal">Done</button>
     </div>
@@ -881,11 +828,10 @@ function openAuthModal(mode = 'login') {
   const isReg = mode === 'register';
   document.getElementById('authModalBody').innerHTML = `
     <div class="section-eyebrow">${isReg ? 'Create Account' : 'Welcome Back'}</div>
-    <h2 style="font-size:1.45rem; font-weight:800; margin-bottom:0.35rem;">${isReg ? 'Join MoxieOn' : 'Sign In to MoxieOn'}</h2>
-    <p style="font-size:0.88rem; color:var(--ink-muted); margin-bottom:1rem;">
+    <h2 style="font-size:1.45rem; font-weight:800; margin-bottom:0.35rem;">${isReg ? 'Join AuraStage' : 'Sign In to Your Vibe'}</h2>
+    <p style="font-size:0.88rem; color:var(--ink-muted); margin-bottom:1.1rem;">
       ${isReg ? 'Step 1 of 2: Set up your account, then pick your music interests.' : 'Access your digital QR tickets, pre-ordered snacks, and curated concert posters.'}
     </p>
-    <div id="authErrorBox" style="display:none; background:#FFF1F2; color:#BE123C; border:1px solid #FECDD3; padding:0.65rem 0.85rem; border-radius:10px; font-size:0.85rem; font-weight:600; margin-bottom:0.85rem;"></div>
     <form id="authForm" style="display:grid; gap:0.85rem;">
       ${isReg ? `
         <div class="field-group"><label>Full Name</label><input id="aName" class="input" required placeholder="e.g., Arathana N." /></div>
@@ -896,7 +842,7 @@ function openAuthModal(mode = 'login') {
         </div>
       ` : ''}
       <div class="field-group"><label>Email</label><input id="aEmail" type="email" class="input" required placeholder="you@example.com" /></div>
-      <div class="field-group"><label>Password</label><input id="aPass" type="password" class="input" required minlength="4" placeholder="Min 4 characters" /></div>
+      <div class="field-group"><label>Password</label><input id="aPass" type="password" class="input" required minlength="6" placeholder="Min 6 characters" /></div>
       <button type="submit" class="btn btn-primary">${isReg ? 'Continue to Music Interests →' : 'Sign In'}</button>
     </form>
     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; padding-top:0.85rem; border-top:1px solid var(--border); flex-wrap:wrap; gap:0.5rem;">
@@ -906,25 +852,19 @@ function openAuthModal(mode = 'login') {
   `;
   openModal('authModal');
 
-  const showErr = msg => {
-    const box = document.getElementById('authErrorBox');
-    box.textContent = msg;
-    box.style.display = 'block';
-  };
-
   document.getElementById('switchAuthModeBtn').onclick = () => openAuthModal(isReg ? 'login' : 'register');
   document.getElementById('demoLoginBtn').onclick = async () => {
     try {
       const res = await api('/api/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email: 'arathana@moxieon.in', password: 'Moxie@2026' })
+        body: JSON.stringify({ email: 'arathana@aurastage.in', password: 'Aura@2026' })
       });
       state.user = res.user;
       await loadUserBookings();
       closeModal('authModal');
       renderHome();
       showToast(`Welcome back, ${state.user.name}!`);
-    } catch (err) { showErr(err.message); }
+    } catch (err) { showToast(err.message); }
   };
 
   document.getElementById('authForm').onsubmit = async e => {
@@ -956,7 +896,7 @@ function openAuthModal(mode = 'login') {
         if (!state.user.onboardingComplete) openInterestOnboarding();
         else { closeModal('authModal'); renderHome(); showToast(`Welcome back, ${state.user.name}!`); }
       }
-    } catch (err) { showErr(err.message); }
+    } catch (err) { showToast(err.message); }
   };
 }
 
@@ -966,7 +906,7 @@ function openInterestOnboarding() {
   document.getElementById('authModalBody').innerHTML = `
     <div class="section-eyebrow">Step 2 of 2 • Personalize</div>
     <h2 style="font-size:1.4rem; font-weight:800; margin-bottom:0.35rem;">What Sounds Move You?</h2>
-    <p style="font-size:0.88rem; color:var(--ink-muted); margin-bottom:1.1rem;">Pick your favorite genres so MoxieOn surfaces upcoming concert posters near you.</p>
+    <p style="font-size:0.88rem; color:var(--ink-muted); margin-bottom:1.1rem;">Pick your favorite genres so we can surface upcoming concert posters near you.</p>
     <div id="interestChipsBox" style="display:flex; flex-wrap:wrap; gap:0.55rem; margin-bottom:1.25rem;">
       ${ALL_INTERESTS.map(i => `<button type="button" class="interest-chip ${picked.has(i) ? 'selected' : ''}" data-int="${esc(i)}">${esc(i)}</button>`).join('')}
     </div>
@@ -1007,13 +947,13 @@ function openInterestOnboarding() {
   };
 }
 
-// ---------- Mixes & Gallery ----------
-function renderMixesAndGallery() {
+// ---------- Mixes & Bento Gallery ----------
+function renderMixes() {
   const mixes = [
-    { id: 'm1', title: 'Midnight Strings & Synth (Live Session)', genre: 'Orchestral', freq: 220, img: IMAGE_MAP.orchestral },
-    { id: 'm2', title: '808 Drift Cypher Beat', genre: 'Hip-Hop', freq: 110, img: IMAGE_MAP.hiphop },
-    { id: 'm3', title: 'Velvet Horizon Sunset Acoustic', genre: 'Indie Singer', freq: 330, img: IMAGE_MAP.indie },
-    { id: 'm4', title: 'Solstice Melodic Techno Drop', genre: 'DJ & Electronic', freq: 146.8, img: IMAGE_MAP.dj }
+    { id: 'm1', title: 'Midnight Strings & Synth (Live Session)', genre: 'Orchestral', notes: [261.63, 329.63, 392.0, 493.88], img: IMAGE_MAP.orchestral },
+    { id: 'm2', title: '808 Drift Cypher Beat', genre: 'Hip-Hop', notes: [110.0, 130.81, 164.81, 196.0], img: IMAGE_MAP.hiphop },
+    { id: 'm3', title: 'Velvet Horizon Sunset Acoustic', genre: 'Indie Singer', notes: [293.66, 349.23, 440.0, 523.25], img: IMAGE_MAP.indie },
+    { id: 'm4', title: 'Solstice Melodic Techno Drop', genre: 'DJ & Electronic', notes: [146.83, 220.0, 261.63, 329.63], img: IMAGE_MAP.dj }
   ];
 
   document.getElementById('mixesGrid').innerHTML = mixes.map(m => `
@@ -1023,7 +963,7 @@ function renderMixesAndGallery() {
         <h3 class="card-title">${esc(m.title)}</h3>
         <p class="card-sub">Preview the ambient stage soundcheck directly in your browser.</p>
         <div class="card-footer">
-          <button class="btn btn-primary play-mix-btn" data-mix="${esc(m.id)}" data-freq="${m.freq}">▶ Play Preview</button>
+          <button class="btn btn-primary play-mix-btn" data-mix="${esc(m.id)}" data-notes="${esc(JSON.stringify(m.notes))}">▶ Play Soundcheck</button>
         </div>
       </div>
     </div>
@@ -1032,29 +972,80 @@ function renderMixesAndGallery() {
   document.querySelectorAll('.play-mix-btn').forEach(btn => {
     btn.onclick = () => toggleAudioPreview(btn);
   });
+}
 
-  document.getElementById('galleryGrid').innerHTML = state.events.map(ev => `
-    <div class="event-card" data-event-id="${esc(ev.id)}">
-      <div class="card-media">
-        <img src="${esc(IMAGE_MAP[ev.imageKey] || IMAGE_MAP.hero)}" alt="${esc(ev.title)}" />
-        <span class="card-badge">${esc(ev.city)}</span>
-      </div>
-      <div class="card-body">
-        <h3 class="card-title">${esc(ev.title)}</h3>
-        <p class="card-sub">${esc(ev.artist)} • ${esc(ev.venue)}</p>
+function getFilteredGallery() {
+  const list = state.gallery.length ? state.gallery : LOCAL_SEED.gallery;
+  if (state.galleryFilter === 'All') return list;
+  return list.filter(item => item.category === state.galleryFilter);
+}
+
+function renderGallery() {
+  const items = getFilteredGallery();
+  const grid = document.getElementById('galleryGrid');
+  if (!grid) return;
+
+  grid.innerHTML = items.map((item, idx) => `
+    <div class="gallery-tile ${item.featured && state.galleryFilter === 'All' ? 'featured' : ''}" data-gidx="${idx}">
+      <img src="${esc(IMAGE_MAP[item.imageKey] || IMAGE_MAP.hero)}" alt="${esc(item.title)}" />
+      <div class="gallery-overlay">
+        <span class="gallery-tag">${esc(item.category)} • ${esc(item.city)} ${esc(item.year)}</span>
+        <div class="gallery-title">${esc(item.title)}</div>
+        <div class="gallery-cap">${esc(item.caption)}</div>
       </div>
     </div>
   `).join('');
+
+  grid.querySelectorAll('.gallery-tile').forEach(tile => {
+    tile.onclick = () => openLightbox(parseInt(tile.dataset.gidx, 10));
+  });
+}
+
+function openLightbox(idx) {
+  const items = getFilteredGallery();
+  if (!items.length) return;
+  state.lightboxIndex = (idx + items.length) % items.length;
+  const item = items[state.lightboxIndex];
+  const img = IMAGE_MAP[item.imageKey] || IMAGE_MAP.hero;
+
+  document.getElementById('lightboxBody').innerHTML = `
+    <div style="border-radius:16px; overflow:hidden; margin-bottom:1rem; max-height:460px;">
+      <img src="${esc(img)}" alt="${esc(item.title)}" style="width:100%; height:100%; max-height:460px; object-fit:cover; display:block;" />
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; flex-wrap:wrap;">
+      <div>
+        <div class="gallery-tag">${esc(item.category)} • ${esc(item.city)} ${esc(item.year)}</div>
+        <h3 style="font-size:1.4rem; font-weight:800; color:#fff;">${esc(item.title)}</h3>
+        <p style="color:#DDD6FE; font-size:0.92rem; margin-top:0.25rem;">${esc(item.caption)}</p>
+      </div>
+      <div style="display:flex; gap:0.55rem; align-items:center;">
+        <button class="btn btn-ghost" id="lbPrevBtn">← Prev</button>
+        <button class="btn btn-ghost" id="lbNextBtn">Next →</button>
+        ${item.eventId ? `<button class="btn btn-rose" id="lbEventBtn">View Concert</button>` : ''}
+      </div>
+    </div>
+  `;
+  openModal('lightboxModal');
+
+  document.getElementById('lbPrevBtn').onclick = () => openLightbox(state.lightboxIndex - 1);
+  document.getElementById('lbNextBtn').onclick = () => openLightbox(state.lightboxIndex + 1);
+  const evBtn = document.getElementById('lbEventBtn');
+  if (evBtn) {
+    evBtn.onclick = () => {
+      closeModal('lightboxModal');
+      openEventDetail(item.eventId);
+    };
+  }
 }
 
 function toggleAudioPreview(btn) {
   const id = btn.dataset.mix;
-  const freq = parseFloat(btn.dataset.freq || '220');
+  const notes = JSON.parse(btn.dataset.notes || '[220, 330, 440]');
   if (state.audioCtx) {
     state.audioCtx.close().catch(() => {});
     state.audioCtx = null;
   }
-  document.querySelectorAll('.play-mix-btn').forEach(b => { b.textContent = '▶ Play Preview'; });
+  document.querySelectorAll('.play-mix-btn').forEach(b => { b.textContent = '▶ Play Soundcheck'; });
   if (state.activeMixId === id) {
     state.activeMixId = null;
     return;
@@ -1062,30 +1053,31 @@ function toggleAudioPreview(btn) {
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) return;
   const ctx = new Ctx();
-  const osc1 = ctx.createOscillator();
-  const osc2 = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc1.type = 'sine';
-  osc2.type = 'triangle';
-  osc1.frequency.value = freq;
-  osc2.frequency.value = freq * 1.5;
-  gain.gain.value = 0.05;
-  osc1.connect(gain);
-  osc2.connect(gain);
-  gain.connect(ctx.destination);
-  osc1.start();
-  osc2.start();
+  const master = ctx.createGain();
+  master.gain.setValueAtTime(0.06, ctx.currentTime);
+  master.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 3.6);
+  master.connect(ctx.destination);
+
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+    osc.frequency.value = freq;
+    osc.connect(master);
+    osc.start(ctx.currentTime + i * 0.16);
+    osc.stop(ctx.currentTime + 3.6);
+  });
+
   state.audioCtx = ctx;
   state.activeMixId = id;
-  btn.textContent = '⏹ Stop Preview';
+  btn.textContent = '⏹ Stop Soundcheck';
   setTimeout(() => {
     if (state.activeMixId === id && state.audioCtx) {
       state.audioCtx.close().catch(() => {});
       state.audioCtx = null;
       state.activeMixId = null;
-      btn.textContent = '▶ Play Preview';
+      btn.textContent = '▶ Play Soundcheck';
     }
-  }, 5000);
+  }, 3700);
 }
 
 // ---------- Sponsors ----------
@@ -1202,10 +1194,8 @@ function bindEvents() {
   document.querySelectorAll('.nav-link').forEach(btn => {
     btn.onclick = () => switchView(btn.dataset.view);
   });
-  document.getElementById('menuToggleBtn').onclick = () => {
-    const drawer = document.getElementById('mobileMenuDrawer');
-    const isOpen = drawer.classList.toggle('open');
-    document.getElementById('menuToggleBtn').setAttribute('aria-expanded', String(isOpen));
+  document.getElementById('mobileMenuBtn').onclick = () => {
+    document.getElementById('mobileDrawer').classList.toggle('open');
   };
   document.getElementById('brandHomeBtn').onclick = e => { e.preventDefault(); switchView('home'); };
   document.getElementById('heroExploreBtn').onclick = () => switchView('events');
@@ -1213,23 +1203,6 @@ function bindEvents() {
   document.getElementById('editInterestsHomeBtn').onclick = () => openInterestOnboarding();
   document.getElementById('backToEventsBtn').onclick = () => switchView('events');
   document.querySelectorAll('[data-goto]').forEach(b => { b.onclick = () => switchView(b.dataset.goto); });
-
-  document.getElementById('heroQuickGoBtn').onclick = () => {
-    const val = document.getElementById('heroQuickSearch').value;
-    document.getElementById('fSearch').value = val;
-    switchView('events');
-    renderEventsCatalog();
-  };
-
-  document.querySelectorAll('[data-vibe], [data-vibe-jump]').forEach(el => {
-    el.onclick = () => {
-      const cat = el.dataset.vibe || el.dataset.vibeJump;
-      document.getElementById('fCategory').value = cat;
-      document.querySelectorAll('#quickCatRow .cat-pill-card').forEach(c => c.classList.toggle('active', c.dataset.cat === cat));
-      switchView('events');
-      renderEventsCatalog();
-    };
-  });
 
   document.getElementById('navAuthBtn').onclick = () => {
     if (state.user) switchView('account'); else openAuthModal('login');
@@ -1243,10 +1216,8 @@ function bindEvents() {
   document.addEventListener('click', e => {
     const closeId = e.target.dataset && e.target.dataset.close;
     if (closeId) closeModal(closeId);
-    if (e.target.classList.contains('modal-backdrop')) {
-      e.target.classList.remove('open');
-      if (e.target.id === 'bookingModal') clearInterval(state.holdTimer);
-    }
+    if (e.target.classList.contains('modal-backdrop')) e.target.classList.remove('open');
+
     const saveBtn = e.target.closest('[data-save-id]');
     if (saveBtn) {
       e.stopPropagation();
@@ -1260,6 +1231,16 @@ function bindEvents() {
     }
   });
 
+  document.addEventListener('keydown', e => {
+    const lb = document.getElementById('lightboxModal');
+    if (lb && lb.classList.contains('open')) {
+      if (e.key === 'Escape') closeModal('lightboxModal');
+      if (e.key === 'ArrowRight') openLightbox(state.lightboxIndex + 1);
+      if (e.key === 'ArrowLeft') openLightbox(state.lightboxIndex - 1);
+    }
+  });
+
+  // Filters
   document.getElementById('toggleFiltersBtn').onclick = () => {
     const panel = document.getElementById('advancedFilterPanel');
     const hidden = panel.style.display === 'none';
@@ -1307,9 +1288,19 @@ function bindEvents() {
     };
   });
 
+  document.querySelectorAll('#galleryFilterTabs .sort-tab').forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll('#galleryFilterTabs .sort-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      state.galleryFilter = tab.dataset.gcat;
+      renderGallery();
+    };
+  });
+
   document.getElementById('gridModeBtn').onclick = () => { state.listMode = false; renderEventsCatalog(); };
   document.getElementById('listModeBtn').onclick = () => { state.listMode = true; renderEventsCatalog(); };
 
+  // Sponsors
   document.getElementById('spType').onchange = populateSponsorTargets;
   document.getElementById('sponsorForm').onsubmit = async e => {
     e.preventDefault();

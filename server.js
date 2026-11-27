@@ -50,13 +50,13 @@ function sanitizeText(str, maxLen = 200) {
 
 // ---------- Initial Seed Data ----------
 function getInitialDB() {
-  const demoPasswordHash = hashPassword('Moxie@2026');
+  const demoPasswordHash = hashPassword('Aura@2026');
   return {
     users: [
       {
         id: 'usr_demo_1',
         name: 'Arathana N.',
-        email: 'arathana@moxieon.in',
+        email: 'arathana@aurastage.in',
         phone: '+91 98401 23456',
         city: 'Chennai',
         passwordHash: demoPasswordHash,
@@ -244,7 +244,7 @@ function getInitialDB() {
       {
         id: 'evt_6',
         status: 'upcoming',
-        title: 'MoxieOn Bass Arena: Hip-Hop & Trap Showcase',
+        title: 'Aura Bass Arena: Hip-Hop & Trap Showcase',
         category: 'Hip-Hop',
         artist: 'Divine & Hanumankind',
         city: 'Chennai',
@@ -291,7 +291,7 @@ function getInitialDB() {
         reviewsCount: 4820,
         attendance: '18,400+ Attendees',
         imageKey: 'orchestral',
-        description: 'Voted MoxieOn Best Event Ever — a sold-out 18,000-strong symphonic tribute blending classical strings, choir, and spatial surround audio.'
+        description: 'Voted AuraStage Best Event Ever — a sold-out 18,000-strong symphonic tribute blending classical strings, choir, and spatial surround audio.'
       },
       {
         id: 'evt_past_2',
@@ -328,6 +328,14 @@ function getInitialDB() {
         description: 'Three generations of independent Indian songwriting united on one sunlit-to-moonlit stage with acoustic sing-alongs.'
       }
     ],
+    gallery: [
+      { id: 'gal_1', title: 'Echoes of Marina Finale', category: 'Orchestral', city: 'Chennai', year: '2025', caption: '45-piece string ensemble under soothing lavender-blue hall acoustics.', imageKey: 'orchestral', eventId: 'evt_past_1', featured: true },
+      { id: 'gal_2', title: '808 Drift Cypher Spotlight', category: 'Hip-Hop', city: 'Bengaluru', year: '2026', caption: 'Live brass & 808s lighting up the open-air arena.', imageKey: 'hiphop', eventId: 'evt_2', featured: false },
+      { id: 'gal_3', title: 'Velvet Horizon Sunset Session', category: 'Indie Singer', city: 'Chennai', year: '2026', caption: 'Intimate acoustic harmonies bathed in warm rose stage glow.', imageKey: 'indie', eventId: 'evt_3', featured: false },
+      { id: 'gal_4', title: 'Solstice Coastal Laser Mapping', category: 'DJ & Electronic', city: 'Goa', year: '2026', caption: 'Synchronized indigo & magenta beams over Vagator Hilltop.', imageKey: 'dj', eventId: 'evt_4', featured: true },
+      { id: 'gal_5', title: 'AuraStage Opening Night Crowd', category: 'DJ & Electronic', city: 'Bengaluru', year: '2026', caption: '12,000+ fans singing every chorus in unison.', imageKey: 'hero', eventId: 'evt_past_2', featured: false },
+      { id: 'gal_6', title: 'Royal Opera Courtyard Encore', category: 'Indie Singer', city: 'Mumbai', year: '2026', caption: 'Candlelit neo-soul & brass quartet under heritage arches.', imageKey: 'indie', eventId: 'evt_5', featured: false }
+    ],
     snacks: [
       { id: 'snk_1', name: 'Classic Sea-Salt Popcorn', price: 180, category: 'Snacks', tag: 'Veg', prep: 'Ready at Gate B' },
       { id: 'snk_2', name: 'Loaded Peri-Peri Nachos', price: 260, category: 'Snacks', tag: 'Veg', prep: 'Warm cheese dip' },
@@ -345,7 +353,6 @@ function getInitialDB() {
         venue: 'Sir Mutha Venkatasubba Rao Concert Hall, Chennai',
         eventDate: '2026-12-18T19:30:00+05:30',
         tierName: 'VIP Orchestra Pit',
-        seats: ['VIP-A3', 'VIP-A4'],
         quantity: 2,
         snacks: [
           { id: 'snk_2', name: 'Loaded Peri-Peri Nachos', qty: 1, price: 260 },
@@ -365,7 +372,6 @@ function getInitialDB() {
         venue: 'Nehru Indoor Stadium, Chennai',
         eventDate: '2025-11-14T19:00:00+05:30',
         tierName: 'General Balcony',
-        seats: ['BAL-C12', 'BAL-C13'],
         quantity: 2,
         snacks: [],
         paymentMethod: 'Debit Card',
@@ -416,7 +422,12 @@ function loadDB() {
     fs.writeFileSync(DB_FILE, JSON.stringify(initial, null, 2));
     return initial;
   }
-  return JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+  const db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+  if (!db.gallery) {
+    db.gallery = getInitialDB().gallery;
+    saveDB(db);
+  }
+  return db;
 }
 
 function saveDB(db) {
@@ -438,8 +449,25 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon'
 };
 
-function sendJSON(res, status, data, headers = {}) {
-  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', ...headers });
+function getCorsHeaders(req) {
+  const origin = req.headers.origin;
+  if (origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin)) {
+    return {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+    };
+  }
+  return {};
+}
+
+function sendJSON(req, res, status, data, headers = {}) {
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    ...getCorsHeaders(req),
+    ...headers
+  });
   res.end(JSON.stringify(data));
 }
 
@@ -467,7 +495,7 @@ function getAuthUser(req, db) {
   const authHeader = req.headers.authorization || '';
   let token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
   if (!token && req.headers.cookie) {
-    const match = req.headers.cookie.match(/moxieon_token=([^;]+)/);
+    const match = req.headers.cookie.match(/aurastage_token=([^;]+)/);
     if (match) token = decodeURIComponent(match[1]);
   }
   const payload = verifyToken(token);
@@ -482,6 +510,11 @@ function safeUser(user) {
 
 // ---------- Request Router ----------
 const server = http.createServer(async (req, res) => {
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, getCorsHeaders(req));
+    return res.end();
+  }
+
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = parsedUrl.pathname;
 
@@ -489,7 +522,7 @@ const server = http.createServer(async (req, res) => {
     const db = loadDB();
 
     if (pathname === '/api/health' && req.method === 'GET') {
-      return sendJSON(res, 200, { ok: true, service: 'MoxieOn Node.js API', time: new Date().toISOString() });
+      return sendJSON(req, res, 200, { ok: true, service: 'AuraStage Node.js API', time: new Date().toISOString() });
     }
 
     if (pathname === '/api/auth/register' && req.method === 'POST') {
@@ -501,11 +534,11 @@ const server = http.createServer(async (req, res) => {
         const city = sanitizeText(body.city || 'Chennai', 50);
         const password = String(body.password || '');
 
-        if (!name || !email.includes('@') || password.length < 4) {
-          return sendJSON(res, 400, { error: 'Please enter your name, a valid email, and a password (4+ characters).' });
+        if (!name || !email.includes('@') || password.length < 6) {
+          return sendJSON(req, res, 400, { error: 'Valid name, email, and 6+ character password are required.' });
         }
         if (db.users.some(u => u.email === email)) {
-          return sendJSON(res, 409, { error: 'An account with this email already exists. Try signing in instead.' });
+          return sendJSON(req, res, 409, { error: 'An account with this email already exists.' });
         }
         const newUser = {
           id: `usr_${crypto.randomBytes(6).toString('hex')}`,
@@ -523,11 +556,11 @@ const server = http.createServer(async (req, res) => {
         db.users.push(newUser);
         saveDB(db);
         const token = signToken({ userId: newUser.id, exp: Date.now() + 7 * 86400000 });
-        return sendJSON(res, 201, { user: safeUser(newUser), token }, {
-          'Set-Cookie': `moxieon_token=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`
+        return sendJSON(req, res, 201, { user: safeUser(newUser), token }, {
+          'Set-Cookie': `aurastage_token=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`
         });
       } catch (err) {
-        return sendJSON(res, 400, { error: err.message });
+        return sendJSON(req, res, 400, { error: err.message });
       }
     }
 
@@ -538,32 +571,32 @@ const server = http.createServer(async (req, res) => {
         const password = String(body.password || '');
         const user = db.users.find(u => u.email === email);
         if (!user || !verifyPassword(password, user.passwordHash)) {
-          return sendJSON(res, 401, { error: 'Invalid email or password.' });
+          return sendJSON(req, res, 401, { error: 'Invalid email or password.' });
         }
         const token = signToken({ userId: user.id, exp: Date.now() + 7 * 86400000 });
-        return sendJSON(res, 200, { user: safeUser(user), token }, {
-          'Set-Cookie': `moxieon_token=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`
+        return sendJSON(req, res, 200, { user: safeUser(user), token }, {
+          'Set-Cookie': `aurastage_token=${encodeURIComponent(token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800`
         });
       } catch (err) {
-        return sendJSON(res, 400, { error: err.message });
+        return sendJSON(req, res, 400, { error: err.message });
       }
     }
 
     if (pathname === '/api/auth/logout' && req.method === 'POST') {
-      return sendJSON(res, 200, { ok: true }, {
-        'Set-Cookie': 'moxieon_token=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0'
+      return sendJSON(req, res, 200, { ok: true }, {
+        'Set-Cookie': 'aurastage_token=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0'
       });
     }
 
     if (pathname === '/api/auth/me' && req.method === 'GET') {
       const user = getAuthUser(req, db);
-      if (!user) return sendJSON(res, 401, { error: 'Not authenticated' });
-      return sendJSON(res, 200, { user: safeUser(user) });
+      if (!user) return sendJSON(req, res, 401, { error: 'Not authenticated' });
+      return sendJSON(req, res, 200, { user: safeUser(user) });
     }
 
     if (pathname === '/api/user/preferences' && req.method === 'PUT') {
       const user = getAuthUser(req, db);
-      if (!user) return sendJSON(res, 401, { error: 'Please sign in first.' });
+      if (!user) return sendJSON(req, res, 401, { error: 'Please sign in first.' });
       try {
         const body = await parseBody(req);
         if (Array.isArray(body.interests)) {
@@ -580,33 +613,58 @@ const server = http.createServer(async (req, res) => {
           }
         }
         saveDB(db);
-        return sendJSON(res, 200, { user: safeUser(user) });
+        return sendJSON(req, res, 200, { user: safeUser(user) });
       } catch (err) {
-        return sendJSON(res, 400, { error: err.message });
+        return sendJSON(req, res, 400, { error: err.message });
       }
     }
 
     if (pathname === '/api/events' && req.method === 'GET') {
-      return sendJSON(res, 200, { events: db.events, snacks: db.snacks });
+      const q = (parsedUrl.searchParams.get('q') || '').toLowerCase();
+      const category = parsedUrl.searchParams.get('category') || 'All';
+      const city = parsedUrl.searchParams.get('city') || 'All';
+      const minRating = parseFloat(parsedUrl.searchParams.get('minRating') || '0');
+      const maxPrice = parseFloat(parsedUrl.searchParams.get('maxPrice') || '999999');
+      const noServiceFee = parsedUrl.searchParams.get('noServiceFee') === 'true';
+      const status = parsedUrl.searchParams.get('status') || 'all';
+
+      const list = db.events.filter(ev => {
+        if (status !== 'all' && ev.status !== status) return false;
+        if (category !== 'All' && ev.category !== category) return false;
+        if (city !== 'All' && ev.city !== city) return false;
+        if (ev.rating < minRating) return false;
+        if (ev.priceMin > maxPrice) return false;
+        if (noServiceFee && !ev.noServiceFee) return false;
+        if (q) {
+          const hay = `${ev.title} ${ev.artist} ${ev.venue} ${ev.city} ${ev.category}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+      return sendJSON(req, res, 200, { events: list, snacks: db.snacks, gallery: db.gallery });
+    }
+
+    if (pathname === '/api/gallery' && req.method === 'GET') {
+      return sendJSON(req, res, 200, { gallery: db.gallery });
     }
 
     if (pathname === '/api/bookings' && req.method === 'GET') {
       const user = getAuthUser(req, db);
-      if (!user) return sendJSON(res, 401, { error: 'Authentication required' });
+      if (!user) return sendJSON(req, res, 401, { error: 'Authentication required' });
       const userBookings = db.bookings.filter(b => b.userId === user.id);
-      return sendJSON(res, 200, { bookings: userBookings });
+      return sendJSON(req, res, 200, { bookings: userBookings });
     }
 
     if (pathname === '/api/bookings' && req.method === 'POST') {
       const user = getAuthUser(req, db);
-      if (!user) return sendJSON(res, 401, { error: 'Please log in to book tickets.' });
+      if (!user) return sendJSON(req, res, 401, { error: 'Please log in to book tickets.' });
       try {
         const body = await parseBody(req);
         const event = db.events.find(e => e.id === body.eventId && e.status === 'upcoming');
-        if (!event) return sendJSON(res, 404, { error: 'Upcoming event not found.' });
+        if (!event) return sendJSON(req, res, 404, { error: 'Upcoming event not found.' });
         const tier = (event.tiers || []).find(t => t.id === body.tierId);
         const qty = Math.max(1, Math.min(10, parseInt(body.quantity || 1, 10)));
-        if (!tier) return sendJSON(res, 400, { error: 'Invalid ticket tier.' });
+        if (!tier) return sendJSON(req, res, 400, { error: 'Invalid ticket tier.' });
 
         const orderedSnacks = [];
         let snacksTotal = 0;
@@ -623,10 +681,9 @@ const server = http.createServer(async (req, res) => {
 
         const ticketSubtotal = tier.price * qty;
         const serviceFee = event.noServiceFee ? 0 : Math.round(ticketSubtotal * 0.05);
-        const couponValid = String(body.coupon || '').trim().toUpperCase() === 'MOXIE15';
+        const couponValid = String(body.coupon || '').trim().toUpperCase() === 'AURA15';
         const discount = couponValid ? Math.round(ticketSubtotal * 0.15) : 0;
         const totalAmount = Math.max(0, ticketSubtotal + snacksTotal + serviceFee - discount);
-        const seats = Array.isArray(body.seats) ? body.seats.map(s => sanitizeText(s, 16)).slice(0, 10) : [];
 
         const booking = {
           id: `BK-${Math.floor(100000 + Math.random() * 900000)}`,
@@ -636,7 +693,6 @@ const server = http.createServer(async (req, res) => {
           venue: `${event.venue}, ${event.city}`,
           eventDate: event.date,
           tierName: tier.name,
-          seats,
           quantity: qty,
           snacks: orderedSnacks,
           paymentMethod: sanitizeText(body.paymentMethod || 'UPI', 40),
@@ -649,14 +705,14 @@ const server = http.createServer(async (req, res) => {
 
         db.bookings.unshift(booking);
         saveDB(db);
-        return sendJSON(res, 201, { booking });
+        return sendJSON(req, res, 201, { booking });
       } catch (err) {
-        return sendJSON(res, 400, { error: err.message });
+        return sendJSON(req, res, 400, { error: err.message });
       }
     }
 
     if (pathname === '/api/sponsors' && req.method === 'GET') {
-      return sendJSON(res, 200, { sponsors: db.sponsors });
+      return sendJSON(req, res, 200, { sponsors: db.sponsors });
     }
 
     if (pathname === '/api/sponsors' && req.method === 'POST') {
@@ -670,7 +726,7 @@ const server = http.createServer(async (req, res) => {
         const message = sanitizeText(body.message || '', 220);
 
         if (!sponsorName || !targetName) {
-          return sendJSON(res, 400, { error: 'Sponsor name and target event/artist are required.' });
+          return sendJSON(req, res, 400, { error: 'Sponsor name and target event/artist are required.' });
         }
 
         const entry = {
@@ -685,15 +741,16 @@ const server = http.createServer(async (req, res) => {
         };
         db.sponsors.unshift(entry);
         saveDB(db);
-        return sendJSON(res, 201, { sponsor: entry });
+        return sendJSON(req, res, 201, { sponsor: entry });
       } catch (err) {
-        return sendJSON(res, 400, { error: err.message });
+        return sendJSON(req, res, 400, { error: err.message });
       }
     }
 
-    return sendJSON(res, 404, { error: 'API route not found' });
+    return sendJSON(req, res, 404, { error: 'API route not found' });
   }
 
+  // Static File Serving (Path Traversal Safe)
   const safePath = path.normalize(pathname === '/' ? '/index.html' : pathname).replace(/^(\.\.[/\\])+/, '');
   const filePath = path.join(PUBLIC_DIR, safePath);
   if (!filePath.startsWith(PUBLIC_DIR)) {
@@ -712,6 +769,14 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
+server.on('error', err => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use. Try: PORT=3001 node server.js`);
+    process.exit(1);
+  }
+  throw err;
+});
+
 server.listen(PORT, () => {
-  console.log(`MoxieOn Event Booking System running at http://localhost:${PORT}`);
+  console.log(`AuraStage Event Booking System running at http://localhost:${PORT}`);
 });
