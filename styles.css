@@ -545,7 +545,7 @@ body {
   box-shadow: var(--shadow-sm);
   transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.32s ease;
 }
-.gallery-tile.featured { grid-column: span 2; }
+@media (min-width: 720px) { .gallery-tile.featured { grid-column: span 2; } }
 .gallery-tile:hover {
   transform: translateY(-5px);
   box-shadow: var(--shadow-lg);

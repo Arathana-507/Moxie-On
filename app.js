@@ -114,13 +114,139 @@ const LOCAL_SEED = {
     }
   ],
   gallery: [
-    { id: 'gal_1', title: 'Echoes of Marina Finale', category: 'Orchestral', city: 'Chennai', year: '2025', caption: '45-piece string ensemble under soothing lavender-blue hall acoustics.', imageKey: 'orchestral', eventId: 'evt_past_1', featured: true },
-    { id: 'gal_2', title: '808 Drift Cypher Spotlight', category: 'Hip-Hop', city: 'Bengaluru', year: '2026', caption: 'Live brass & 808s lighting up the open-air arena.', imageKey: 'hiphop', eventId: 'evt_2', featured: false },
-    { id: 'gal_3', title: 'Velvet Horizon Sunset Session', category: 'Indie Singer', city: 'Chennai', year: '2026', caption: 'Intimate acoustic harmonies bathed in warm rose stage glow.', imageKey: 'indie', eventId: 'evt_3', featured: false },
-    { id: 'gal_4', title: 'Solstice Coastal Laser Mapping', category: 'DJ & Electronic', city: 'Goa', year: '2026', caption: 'Synchronized indigo & magenta beams over Vagator Hilltop.', imageKey: 'dj', eventId: 'evt_4', featured: true },
-    { id: 'gal_5', title: 'AuraStage Opening Night Crowd', category: 'DJ & Electronic', city: 'Bengaluru', year: '2026', caption: '12,000+ fans singing every chorus in unison.', imageKey: 'hero', eventId: 'evt_past_2', featured: false },
-    { id: 'gal_6', title: 'Royal Opera Courtyard Encore', category: 'Indie Singer', city: 'Mumbai', year: '2026', caption: 'Candlelit neo-soul & brass quartet under heritage arches.', imageKey: 'indie', eventId: 'evt_5', featured: false }
-  ],
+    {
+        "id": "gal_1",
+        "title": "Echoes of Marina Finale",
+        "category": "Orchestral",
+        "city": "Chennai",
+        "year": "2025",
+        "caption": "45-piece string ensemble under soothing lavender-blue hall acoustics at Nehru Indoor Stadium.",
+        "imageKey": "orchestral",
+        "eventId": "evt_past_1",
+        "featured": true
+    },
+    {
+        "id": "gal_2",
+        "title": "808 Drift Cypher Spotlight",
+        "category": "Hip-Hop",
+        "city": "Bengaluru",
+        "year": "2026",
+        "caption": "Live brass & booming 808s lighting up Jayamahal Palace Grounds.",
+        "imageKey": "hiphop",
+        "eventId": "evt_2",
+        "featured": false
+    },
+    {
+        "id": "gal_3",
+        "title": "Velvet Horizon Sunset Session",
+        "category": "Indie Singer",
+        "city": "Chennai",
+        "year": "2026",
+        "caption": "Intimate acoustic harmonies bathed in warm rose stage glow at YMCA Nandanam.",
+        "imageKey": "indie",
+        "eventId": "evt_3",
+        "featured": false
+    },
+    {
+        "id": "gal_4",
+        "title": "Solstice Coastal Laser Mapping",
+        "category": "DJ & Electronic",
+        "city": "Goa",
+        "year": "2026",
+        "caption": "Synchronized indigo & magenta beams over Vagator Hilltop Amphitheatre.",
+        "imageKey": "dj",
+        "eventId": "evt_4",
+        "featured": true
+    },
+    {
+        "id": "gal_5",
+        "title": "Neon Monsoon Opening Night",
+        "category": "DJ & Electronic",
+        "city": "Bengaluru",
+        "year": "2026",
+        "caption": "12,200+ fans singing every chorus in unison under drone light formations.",
+        "imageKey": "hero",
+        "eventId": "evt_past_2",
+        "featured": false
+    },
+    {
+        "id": "gal_6",
+        "title": "Royal Opera Courtyard Encore",
+        "category": "Indie Singer",
+        "city": "Mumbai",
+        "year": "2026",
+        "caption": "Candlelit neo-soul & brass quartet under heritage arches.",
+        "imageKey": "indie",
+        "eventId": "evt_5",
+        "featured": false
+    },
+    {
+        "id": "gal_7",
+        "title": "Strings & Analog Synth Overture",
+        "category": "Orchestral",
+        "city": "Chennai",
+        "year": "2026",
+        "caption": "Modular synthesizers weaving through live cello and violin swells.",
+        "imageKey": "orchestral",
+        "eventId": "evt_1",
+        "featured": false
+    },
+    {
+        "id": "gal_8",
+        "title": "360\u00b0 Arena Bass Drop",
+        "category": "Hip-Hop",
+        "city": "Chennai",
+        "year": "2026",
+        "caption": "Center-stage hip-hop showcase with custom sub-bass arrays at Island Grounds.",
+        "imageKey": "hiphop",
+        "eventId": "evt_6",
+        "featured": false
+    },
+    {
+        "id": "gal_9",
+        "title": "Indie Roots & Rooftops Sing-Along",
+        "category": "Indie Singer",
+        "city": "Mumbai",
+        "year": "2026",
+        "caption": "9,800 voices echoing across Mahalaxmi Racecourse at dusk.",
+        "imageKey": "hero",
+        "eventId": "evt_past_3",
+        "featured": false
+    },
+    {
+        "id": "gal_10",
+        "title": "Chamber Winds & Choir Rehearsal",
+        "category": "Orchestral",
+        "city": "Bengaluru",
+        "year": "2025",
+        "caption": "Golden-hour soundcheck before a sold-out symphonic tribute.",
+        "imageKey": "orchestral",
+        "eventId": "evt_past_1",
+        "featured": false
+    },
+    {
+        "id": "gal_11",
+        "title": "Midnight Freestyle Pit",
+        "category": "Hip-Hop",
+        "city": "Mumbai",
+        "year": "2026",
+        "caption": "Underground MCs trading bars with live turntablist cuts.",
+        "imageKey": "hiphop",
+        "eventId": "evt_2",
+        "featured": false
+    },
+    {
+        "id": "gal_12",
+        "title": "Afterhours Melodic Techno Set",
+        "category": "DJ & Electronic",
+        "city": "Goa",
+        "year": "2026",
+        "caption": "Deep hypnotic grooves overlooking the Arabian Sea cliffs.",
+        "imageKey": "dj",
+        "eventId": "evt_4",
+        "featured": false
+    }
+],
   snacks: [
     { id: 'snk_1', name: 'Classic Sea-Salt Popcorn', price: 180, category: 'Snacks', tag: 'Veg', prep: 'Ready at Gate B' },
     { id: 'snk_2', name: 'Loaded Peri-Peri Nachos', price: 260, category: 'Snacks', tag: 'Veg', prep: 'Warm cheese dip' },
@@ -155,7 +281,7 @@ let LOCAL_DB = JSON.parse(JSON.stringify(LOCAL_SEED));
 let LOCAL_UID = null;
 try {
   const saved = localStorage.getItem('aurastage_db_v2');
-  if (saved) LOCAL_DB = JSON.parse(saved);
+  if (saved) { LOCAL_DB = JSON.parse(saved); if (!LOCAL_DB.gallery || LOCAL_DB.gallery.length < LOCAL_SEED.gallery.length) LOCAL_DB.gallery = JSON.parse(JSON.stringify(LOCAL_SEED.gallery)); }
   LOCAL_UID = localStorage.getItem('aurastage_uid_v2');
 } catch {}
 
